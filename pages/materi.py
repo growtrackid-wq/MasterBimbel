@@ -21,13 +21,13 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 🩺 Endokrin & Metabolisme")
             st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
-            st.link_button("📂 Buka Folder Endokrin", "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing")
+            st.link_button("📂 Buka Folder Endokrin", "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing", use_container_width=True, type="primary")
 
     with col2:
         with st.container(border=True):
             st.markdown("### 🥑 Gastroenterohepatologi")
             st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
-            st.link_button("📂 Buka Folder Gastro", "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing")
+            st.link_button("📂 Buka Folder Gastro", "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing", use_container_width=True, type="primary")
 
     # Baris 2
     col3, col4 = st.columns(2)
@@ -35,7 +35,7 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### ❤️ Kardiologi & Vaskular")
             st.caption("Kardiovaskular, EKG, Penyakit Jantung Koroner, dan Hipertensi.")
-            st.link_button("📂 Buka Folder Kardiologi", "https://drive.google.com/drive/folders/1doZFx_pEHBf6vZvqgpU7JcHmzLvW03T1?usp=sharing")
+            st.link_button("📂 Buka Folder Kardiologi", "https://drive.google.com/drive/folders/1doZFx_pEHBf6vZvqgpU7JcHmzLvW03T1?usp=sharing", use_container_width=True, type="primary")
 
     with col4:
         with st.container(border=True):
