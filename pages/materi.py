@@ -27,7 +27,7 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 🥑 Gastroenterohepatologi")
             st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
-            st.link_button("📂 Buka Folder Gastro", "https://drive.google.com/drive/folders/PASTE_LINK_GASTRO_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Gastro", "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing")
 
     # Baris 2
     col3, col4 = st.columns(2)
@@ -35,13 +35,13 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### ❤️ Kardiologi & Vaskular")
             st.caption("Kardiovaskular, EKG, Penyakit Jantung Koroner, dan Hipertensi.")
-            st.link_button("📂 Buka Folder Kardiologi", "https://drive.google.com/drive/folders/PASTE_LINK_KARDIOLOGI_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Kardiologi", "https://drive.google.com/drive/folders/1doZFx_pEHBf6vZvqgpU7JcHmzLvW03T1?usp=sharing")
 
     with col4:
         with st.container(border=True):
             st.markdown("### 🦟 Kedokteran Tropis (KedTrop)")
             st.caption("Infeksi Tropis, DHF, Malaria, Demam Tifoid, dan Parasitologi.")
-            st.link_button("📂 Buka Folder KedTrop", "https://drive.google.com/drive/folders/PASTE_LINK_KEDTROP_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder KedTrop", "https://drive.google.com/drive/folders/1IVspdEFwRoRCPx1_BYAZnN0woRDAM3WD?usp=sharing", use_container_width=True, type="primary")
 
     # Baris 3
     col5, col6 = st.columns(2)
@@ -49,13 +49,13 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 🧠 Neuropsikiatri")
             st.caption("Neurologi (Saraf), Stroke, Kejang, serta Gangguan Psikiatri.")
-            st.link_button("📂 Buka Folder Neuropsikiatri", "https://drive.google.com/drive/folders/PASTE_LINK_NEUROPSIKIATRI_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Neuropsikiatri", "https://drive.google.com/drive/folders/1yRrmN1AgK-9bHg8DPAsAqEyvzN5hDCV2?usp=sharing", use_container_width=True, type="primary")
 
     with col6:
         with st.container(border=True):
             st.markdown("### 🫁 Pulmonologi & Respirasi")
             st.caption("Sistem Respirasi, Asma, PPOK, Tuberculosis (TB), dan Pneumonia.")
-            st.link_button("📂 Buka Folder Respirasi", "https://drive.google.com/drive/folders/PASTE_LINK_RESPIRASI_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Respirasi", "https://drive.google.com/drive/folders/1s42ZzH7ay4rKu_YaNlj6-Ox8HjT66D3e?usp=sharing", use_container_width=True, type="primary")
 
     # Baris 4
     col7, col8 = st.columns(2)
@@ -63,13 +63,13 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 👁️ Special Sense (Indera)")
             st.caption("Indera Mata, Telinga Hidung Tenggorokan (THT), dan Dermatologi.")
-            st.link_button("📂 Buka Folder Special Sense", "https://drive.google.com/drive/folders/PASTE_LINK_SPECIAL_SENSE_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Special Sense", "https://drive.google.com/drive/folders/1MFWypf6XLL1Wz1-dqUG8058xG7_h8fk9?usp=sharing", use_container_width=True, type="primary")
 
     with col8:
         with st.container(border=True):
             st.markdown("### 🚽 Urologi & Ginjal")
             st.caption("Saluran Kemih, Infeksi Saluran Kemih (ISK), BPH, dan Ginjal.")
-            st.link_button("📂 Buka Folder Urologi", "https://drive.google.com/drive/folders/PASTE_LINK_UROLOGI_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Urologi", "https://drive.google.com/drive/folders/1sxsFjKpncecy4HcsjtmVDQGFYqZoWy8N?usp=sharing", use_container_width=True, type="primary")
 
 
 # ==========================================
