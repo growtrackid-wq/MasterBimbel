@@ -73,7 +73,7 @@ with tab_slide:
 
 
 # ==========================================
-# TAB 2: SISTEM TRYOUT CBT
+# TAB 2: SISTEM TRYOUT CBT (DARI FILE EXCEL)
 # ==========================================
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -84,25 +84,18 @@ with tab_tryout:
     if mulai_ujian:
         st.divider()
 
-        # Inisialisasi Bank Soal di Session State
+        # Membaca Bank Soal dari File Excel
         if 'data_soal' not in st.session_state:
-            raw_data = {
-                'No': [1, 2],
-                'Soal': [
-                    "Seorang pasien laki-laki berusia 45 tahun datang dengan keluhan nyeri dada kiri yang menjalar ke lengan kiri sejak 2 jam lalu. Diagnosis yang paling tepat adalah...",
-                    "Seorang anak berusia 5 tahun dibawa ibunya dengan keluhan demam tinggi selama 4 hari disertai bintik merah di kulit. Uji Rumple Leede (+). Diagnosa awal yang tepat..."
-                ],
-                'A': ["Gastroesophageal Reflux Disease (GERD)", "Demam Berdarah Dengue (DBD)"],
-                'B': ["Acute Coronary Syndrome (ACS)", "Campak / Morbili"],
-                'C': ["Perikarditis Akut", "Demam Tifoid"],
-                'D': ["Pneumotoraks", "Malaria"],
-                'Jawaban': ["B", "A"],
-                'Pembahasan': [
-                    "Nyeri dada kiri yang menjalar ke lengan kiri merupakan gejala khas dari IMA/ACS akibat iskemia miokard.",
-                    "Demam tinggi mendadak disertai manifestasi perdarahan (Rumple Leede positif) pada anak mengarah kuat pada Dengue Hemorrhagic Fever."
-                ]
-            }
-            st.session_state.data_soal = pd.DataFrame(raw_data)
+            try:
+                # Membaca file bank_soal.xlsx yang berada di folder yang sama
+                df_soal = pd.read_excel("bank_soal.xlsx")
+                st.session_state.data_soal = df_soal
+            except FileNotFoundError:
+                st.error("⚠️ File `bank_soal.xlsx` tidak ditemukan! Pastikan nama file dan foldernya sudah sesuai.")
+                st.stop()
+            except Exception as e:
+                st.error(f"⚠️ Terjadi kesalahan saat membaca file Excel: {e}")
+                st.stop()
 
         if 'soal_sekarang' not in st.session_state:
             st.session_state.soal_sekarang = 0
@@ -114,15 +107,24 @@ with tab_tryout:
         total_soal = len(df)
 
         if idx < total_soal:
-            st.markdown(f"### **Soal No. {df.loc[idx, 'No']} dari {total_soal}**")
+            # Progress bar pengerjaan
+            progress = (idx + 1) / total_soal
+            st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
+            
+            st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
             st.markdown(f"**{df.loc[idx, 'Soal']}**")
             
+            # Mendukung opsi jawaban A sampai E (jika kolom E ada)
             opsi = [
                 f"A. {df.loc[idx, 'A']}", 
                 f"B. {df.loc[idx, 'B']}", 
                 f"C. {df.loc[idx, 'C']}", 
                 f"D. {df.loc[idx, 'D']}"
             ]
+            
+            # Tambahkan Opsi E jika terdapat di Excel
+            if 'E' in df.columns and pd.notna(df.loc[idx, 'E']):
+                opsi.append(f"E. {df.loc[idx, 'E']}")
             
             pilihan = st.radio("Pilih jawaban:", opsi, index=None, key=f"ans_{idx}")
             
@@ -137,14 +139,16 @@ with tab_tryout:
             
             if st.session_state.sudah_cek:
                 jawaban_user = pilihan.split(".")[0] if pilihan else ""
-                jawaban_benar = df.loc[idx, 'Jawaban']
+                jawaban_benar = str(df.loc[idx, 'Jawaban']).strip().upper()
                 
                 if jawaban_user == jawaban_benar:
                     st.success(f"✅ **Jawaban kamu BENAR! ({jawaban_benar})**")
                 else:
                     st.error(f"❌ **Jawaban kamu SALAH! Jawaban yang benar adalah {jawaban_benar}**")
                     
-                st.info(f"**Pembahasan:**\n\n{df.loc[idx, 'Pembahasan']}")
+                # Menampilkan Pembahasan jika kolom Pembahasan ada di Excel
+                if 'Pembahasan' in df.columns and pd.notna(df.loc[idx, 'Pembahasan']):
+                    st.info(f"**Pembahasan:**\n\n{df.loc[idx, 'Pembahasan']}")
                 
                 with col_btn2:
                     if st.button("Selanjutnya ➡️", type="primary"):
@@ -153,7 +157,7 @@ with tab_tryout:
                         st.rerun()
         else:
             st.balloons()
-            st.success("🎉 **Selesai!** Kamu telah menyelesaikan simulasi tryout kali ini.")
+            st.success(f"🎉 **Selesai!** Kamu telah menyelesaikan seluruh {total_soal} soal tryout kali ini.")
             if st.button("Ulang Ujian 🔄", type="primary"):
                 st.session_state.soal_sekarang = 0
                 st.session_state.sudah_cek = False
