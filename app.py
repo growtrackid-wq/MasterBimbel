@@ -31,7 +31,7 @@ pg = st.navigation(
 
 # 3. Custom Banner Header dengan Gambar Background
 # Gambar diambil langsung dari repositori GitHub milikmu
-banner_url = "https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/banner.jpg"
+banner_url = "https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/pages/banner.jpg"
 
 st.markdown(f"""
     <div style="
