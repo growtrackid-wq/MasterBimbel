@@ -21,7 +21,7 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 🩺 Endokrin & Metabolisme")
             st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
-            st.link_button("📂 Buka Folder Endokrin", "https://drive.google.com/drive/folders/PASTE_LINK_ENDOKRIN_DISINI", use_container_width=True, type="primary")
+            st.link_button("📂 Buka Folder Endokrin", "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing")
 
     with col2:
         with st.container(border=True):
