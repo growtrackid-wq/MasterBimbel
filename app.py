@@ -11,8 +11,11 @@ faq_page = st.Page("pages/faq.py", title="FAQ", icon="❓")
 kontak_page = st.Page("pages/kontak.py", title="Kontak", icon="📞")
 kebijakan_page = st.Page("pages/kebijakan.py", title="Kebijakan Privasi", icon="🛡️")
 
-# 3. Inisialisasi Navigasi (Bisa ditaruh di Sidebar atau Navbar atas otomatis oleh Streamlit)
-pg = st.navigation([tentang_kami_page, materi_page, testimoni_page, faq_page, kontak_page, kebijakan_page])
+# 3. Inisialisasi Navigasi (Pindahkan ke bagian atas dengan position="top")
+pg = st.navigation(
+    [tentang_kami_page, materi_page, testimoni_page, faq_page, kontak_page, kebijakan_page],
+    position="top"
+)
 
 # 4. Tambahkan Tombol Masuk / Daftar di Bagian Atas
 col_logo, col_space, col_auth = st.columns([2, 5, 3])
