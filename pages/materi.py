@@ -73,7 +73,7 @@ with tab_slide:
 
 
 # ==========================================
-# TAB 2: SISTEM TRYOUT CBT (DARI FILE EXCEL)
+# TAB 2: SISTEM TRYOUT CBT (MODEL UJIAN SUNGGUHAN)
 # ==========================================
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -84,81 +84,151 @@ with tab_tryout:
     if mulai_ujian:
         st.divider()
 
-        # Membaca Bank Soal dari File Excel
+        # Load bank soal dari excel
         if 'data_soal' not in st.session_state:
             try:
-                # Membaca file bank_soal.xlsx yang berada di folder yang sama
                 df_soal = pd.read_excel("bank_soal.xlsx")
                 st.session_state.data_soal = df_soal
-            except FileNotFoundError:
-                st.error("⚠️ File `bank_soal.xlsx` tidak ditemukan! Pastikan nama file dan foldernya sudah sesuai.")
-                st.stop()
             except Exception as e:
-                st.error(f"⚠️ Terjadi kesalahan saat membaca file Excel: {e}")
+                st.error(f"⚠️ Terjadi kesalahan saat membaca `bank_soal.xlsx`: {e}")
                 st.stop()
 
+        # Inisialisasi State Ujian
         if 'soal_sekarang' not in st.session_state:
             st.session_state.soal_sekarang = 0
-        if 'sudah_cek' not in st.session_state:
-            st.session_state.sudah_cek = False
+        if 'jawaban_user' not in st.session_state:
+            st.session_state.jawaban_user = {}  # Format: {idx_soal: 'A'}
+        if 'ujian_selesai' not in st.session_state:
+            st.session_state.ujian_selesai = False
 
-        idx = st.session_state.soal_sekarang
         df = st.session_state.data_soal
         total_soal = len(df)
+        idx = st.session_state.soal_sekarang
 
-        if idx < total_soal:
-            # Progress bar pengerjaan
+        # ------------------------------------------
+        # A. HALAMAN PENGERJAAN SOAL
+        # ------------------------------------------
+        if not st.session_state.ujian_selesai:
+            # Progress Bar
             progress = (idx + 1) / total_soal
             st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
-            
+
             st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
             st.markdown(f"**{df.loc[idx, 'Soal']}**")
-            
-            # Mendukung opsi jawaban A sampai E (jika kolom E ada)
+
+            # Susun Pilihan Jawaban (A - E)
             opsi = [
                 f"A. {df.loc[idx, 'A']}", 
                 f"B. {df.loc[idx, 'B']}", 
                 f"C. {df.loc[idx, 'C']}", 
                 f"D. {df.loc[idx, 'D']}"
             ]
-            
-            # Tambahkan Opsi E jika terdapat di Excel
             if 'E' in df.columns and pd.notna(df.loc[idx, 'E']):
                 opsi.append(f"E. {df.loc[idx, 'E']}")
+
+            # Ambil jawaban yang sebelumnya sudah pernah dipilih (jika ada)
+            jawaban_sebelumnya = st.session_state.jawaban_user.get(idx, None)
             
-            pilihan = st.radio("Pilih jawaban:", opsi, index=None, key=f"ans_{idx}")
-            
-            st.write("") # Margin spacing
-            
-            # Kolom Tombol
-            col_btn1, col_btn2 = st.columns([1, 4])
-            
-            with col_btn1:
-                if st.button("Cek Jawaban", disabled=(pilihan is None), use_container_width=True):
-                    st.session_state.sudah_cek = True
-            
-            if st.session_state.sudah_cek:
-                jawaban_user = pilihan.split(".")[0] if pilihan else ""
-                jawaban_benar = str(df.loc[idx, 'Jawaban']).strip().upper()
-                
-                if jawaban_user == jawaban_benar:
-                    st.success(f"✅ **Jawaban kamu BENAR! ({jawaban_benar})**")
-                else:
-                    st.error(f"❌ **Jawaban kamu SALAH! Jawaban yang benar adalah {jawaban_benar}**")
-                    
-                # Menampilkan Pembahasan jika kolom Pembahasan ada di Excel
-                if 'Pembahasan' in df.columns and pd.notna(df.loc[idx, 'Pembahasan']):
-                    st.info(f"**Pembahasan:**\n\n{df.loc[idx, 'Pembahasan']}")
-                
-                with col_btn2:
-                    if st.button("Selanjutnya ➡️", type="primary"):
+            # Cari index dari jawaban sebelumnya untuk default radio button
+            index_default = None
+            if jawaban_sebelumnya:
+                for i, o in enumerate(opsi):
+                    if o.startswith(jawaban_sebelumnya):
+                        index_default = i
+                        break
+
+            # Radio Button Opsi Jawaban
+            pilihan = st.radio(
+                "Pilih jawaban:", 
+                opsi, 
+                index=index_default, 
+                key=f"radio_soal_{idx}"
+            )
+
+            # Simpan pilihan ke session_state setiap kali user memilih
+            if pilihan:
+                st.session_state.jawaban_user[idx] = pilihan.split(".")[0]
+
+            st.write("") # Margin Spacing
+
+            # Navigasi Tombol (Sebelumnya, Selanjutnya, Selesai)
+            col_nav1, col_nav2, col_nav3 = st.columns([1, 1, 2])
+
+            with col_nav1:
+                if st.button("⬅️ Sebelumnya", disabled=(idx == 0), use_container_width=True):
+                    st.session_state.soal_sekarang -= 1
+                    st.rerun()
+
+            with col_nav2:
+                if idx < total_soal - 1:
+                    if st.button("Selanjutnya ➡️", type="primary", use_container_width=True):
                         st.session_state.soal_sekarang += 1
-                        st.session_state.sudah_cek = False
                         st.rerun()
+
+            with col_nav3:
+                # Tombol Selesai Ujian hanya muncul jika sudah di nomor terakhir atau kapan saja
+                if idx == total_soal - 1:
+                    if st.button("🏁 Selesai & Kumpulkan Ujian", type="primary", use_container_width=True):
+                        st.session_state.ujian_selesai = True
+                        st.rerun()
+
+        # ------------------------------------------
+        # B. HALAMAN HASIL & REKAPITULASI SOAL
+        # ------------------------------------------
         else:
             st.balloons()
-            st.success(f"🎉 **Selesai!** Kamu telah menyelesaikan seluruh {total_soal} soal tryout kali ini.")
-            if st.button("Ulang Ujian 🔄", type="primary"):
+            st.subheader("📊 Hasil Simulasi Tryout CBT")
+
+            # Hitung Nilai Benar & Salah
+            benar = 0
+            salah = 0
+            tidak_dijawab = 0
+
+            for i in range(total_soal):
+                jawaban_user = st.session_state.jawaban_user.get(i, None)
+                jawaban_benar = str(df.loc[i, 'Jawaban']).strip().upper()
+
+                if jawaban_user is None:
+                    tidak_dijawab += 1
+                elif jawaban_user == jawaban_benar:
+                    benar += 1
+                else:
+                    salah += 1
+
+            skor_persen = round((benar / total_soal) * 100, 1)
+
+            # Tampilkan Ringkasan Nilai Menggunakan Metrik Streamlit
+            col_res1, col_res2, col_res3, col_res4 = st.columns(4)
+            col_res1.metric("Skor Akhir", f"{skor_persen}%")
+            col_res2.metric("Jawaban Benar ✅", f"{benar} Soal")
+            col_res3.metric("Jawaban Salah ❌", f"{salah} Soal")
+            col_res4.metric("Kosong ⚪", f"{tidak_dijawab} Soal")
+
+            st.divider()
+            st.subheader("🔍 Review & Pembahasan Soal")
+
+            # Tampilkan Rincian Tiap Soal
+            for i in range(total_soal):
+                jawaban_user = st.session_state.jawaban_user.get(i, "Tidak Dijawab")
+                jawaban_benar = str(df.loc[i, 'Jawaban']).strip().upper()
+
+                is_correct = (jawaban_user == jawaban_benar)
+                status_icon = "✅" if is_correct else "❌"
+
+                with st.expander(f"Soal No. {df.loc[i, 'No']} - Status: {status_icon}"):
+                    st.markdown(f"**{df.loc[i, 'Soal']}**")
+                    
+                    st.write(f"- **Jawaban Kamu:** `{jawaban_user}`")
+                    st.write(f"- **Jawaban Benar:** `{jawaban_benar}`")
+
+                    if 'Pembahasan' in df.columns and pd.notna(df.loc[i, 'Pembahasan']):
+                        st.info(f"**Pembahasan:**\n\n{df.loc[i, 'Pembahasan']}")
+
+            st.divider()
+            
+            # Tombol Ulang Ujian
+            if st.button("🔄 Ulang Simulasi Ujian", type="primary"):
                 st.session_state.soal_sekarang = 0
-                st.session_state.sudah_cek = False
+                st.session_state.jawaban_user = {}
+                st.session_state.ujian_selesai = False
                 st.rerun()
