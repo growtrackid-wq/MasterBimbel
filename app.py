@@ -3,24 +3,26 @@ import streamlit as st
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
-# Styling CSS untuk merapikan tombol menu agar terlihat seperti Navbar profesional
+# Styling CSS untuk membuat teks menu tebal (Bold), lebih besar, dan biru gelap
 st.markdown("""
     <style>
         [data-testid="stSidebarNav"] {display: none;}
         [data-testid="stSidebar"] {display: none;}
         .block-container { padding-top: 1rem; }
 
-        /* Kustomisasi gaya tombol navigasi */
+        /* Kustomisasi tombol menu navigasi */
         div[data-testid="stColumn"] button {
             border: none !important;
             background-color: transparent !important;
-            color: #0f172a !important;
-            font-weight: 800 !important;
-            font-size: 1.5rem !important;
+            color: #0f172a !important;      /* Warna Biru Gelap / Dark Slate */
+            font-weight: 800 !important;     /* Bold (Tebal) */
+            font-size: 1.15rem !important;   /* Ukuran Font Lebih Besar */
             transition: all 0.2s ease-in-out;
         }
+        
+        /* Efek saat kursor diarahkan ke menu */
         div[data-testid="stColumn"] button:hover {
-            color: #1d4ed8 !important;
+            color: #2563eb !important;      /* Biru Terang saat Hover */
             background-color: #f1f5f9 !important;
             border-radius: 8px !important;
         }
@@ -58,8 +60,8 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 4. Navbar Horizontal Profesional (Sejajar dalam 1 Baris)
-c1, c2, c3, c4, c5, c6, c_space, c_masuk, c_daftar = st.columns([1.2, 1, 1, 0.9, 0.9, 1.4, 1.5, 1, 1])
+# 4. Navbar Horizontal
+c1, c2, c3, c4, c5, c6, c_space, c_masuk, c_daftar = st.columns([1.3, 1.1, 1.1, 1.0, 1.1, 1.4, 1.0, 1.0, 1.0])
 
 with c1:
     if st.button("🏢 Tentang", use_container_width=True): st.switch_page("pages/tentang_kami.py")
