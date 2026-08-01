@@ -14,9 +14,9 @@ st.markdown("""
         div[data-testid="stColumn"] button {
             border: none !important;
             background-color: transparent !important;
-            color: #334155 !important;
-            font-weight: 600 !important;
-            font-size: 0.95rem !important;
+            color: #0f172a !important;
+            font-weight: 800 !important;
+            font-size: 1.5rem !important;
             transition: all 0.2s ease-in-out;
         }
         div[data-testid="stColumn"] button:hover {
