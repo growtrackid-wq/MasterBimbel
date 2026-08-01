@@ -73,7 +73,7 @@ with tab_slide:
 
 
 # ==========================================
-# TAB 2: SISTEM TRYOUT CBT
+# TAB 2: SISTEM TRYOUT CBT (DARI FILE EXCEL)
 # ==========================================
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -84,30 +84,17 @@ with tab_tryout:
     if mulai_ujian:
         st.divider()
 
-        # Membaca Bank Soal dari Excel (.xlsx) atau CSV (.csv)
+        # Membaca Bank Soal dari File Excel
         if 'data_soal' not in st.session_state:
             try:
-                # Coba baca file .xlsx terlebih dahulu
+                # Membaca file bank_soal.xlsx yang berada di folder yang sama
                 df_soal = pd.read_excel("bank_soal.xlsx")
                 st.session_state.data_soal = df_soal
-            except ModuleNotFoundError:
-                # Jika openpyxl belum ter-install, coba cari file .csv
-                try:
-                    df_soal = pd.read_csv("bank_soal.csv")
-                    st.session_state.data_soal = df_soal
-                except FileNotFoundError:
-                    st.error("⚠️ Pustaka `openpyxl` belum terinstall dan file `bank_soal.csv` tidak ditemukan. Jalankan `pip install openpyxl` atau simpan file bank soal sebagai `bank_soal.csv`.")
-                    st.stop()
             except FileNotFoundError:
-                # Jika .xlsx tidak ditemukan, coba cari .csv
-                try:
-                    df_soal = pd.read_csv("bank_soal.csv")
-                    st.session_state.data_soal = df_soal
-                except FileNotFoundError:
-                    st.error("⚠️ File `bank_soal.xlsx` atau `bank_soal.csv` tidak ditemukan! Pastikan file soal ada di folder yang sama.")
-                    st.stop()
+                st.error("⚠️ File `bank_soal.xlsx` tidak ditemukan! Pastikan nama file dan foldernya sudah sesuai.")
+                st.stop()
             except Exception as e:
-                st.error(f"⚠️ Terjadi kesalahan saat membaca file: {e}")
+                st.error(f"⚠️ Terjadi kesalahan saat membaca file Excel: {e}")
                 st.stop()
 
         if 'soal_sekarang' not in st.session_state:
@@ -120,12 +107,14 @@ with tab_tryout:
         total_soal = len(df)
 
         if idx < total_soal:
+            # Progress bar pengerjaan
             progress = (idx + 1) / total_soal
             st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
             
             st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
             st.markdown(f"**{df.loc[idx, 'Soal']}**")
             
+            # Mendukung opsi jawaban A sampai E (jika kolom E ada)
             opsi = [
                 f"A. {df.loc[idx, 'A']}", 
                 f"B. {df.loc[idx, 'B']}", 
@@ -133,6 +122,7 @@ with tab_tryout:
                 f"D. {df.loc[idx, 'D']}"
             ]
             
+            # Tambahkan Opsi E jika terdapat di Excel
             if 'E' in df.columns and pd.notna(df.loc[idx, 'E']):
                 opsi.append(f"E. {df.loc[idx, 'E']}")
             
@@ -140,6 +130,7 @@ with tab_tryout:
             
             st.write("") # Margin spacing
             
+            # Kolom Tombol
             col_btn1, col_btn2 = st.columns([1, 4])
             
             with col_btn1:
@@ -155,6 +146,7 @@ with tab_tryout:
                 else:
                     st.error(f"❌ **Jawaban kamu SALAH! Jawaban yang benar adalah {jawaban_benar}**")
                     
+                # Menampilkan Pembahasan jika kolom Pembahasan ada di Excel
                 if 'Pembahasan' in df.columns and pd.notna(df.loc[idx, 'Pembahasan']):
                     st.info(f"**Pembahasan:**\n\n{df.loc[idx, 'Pembahasan']}")
                 
