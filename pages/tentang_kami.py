@@ -1,17 +1,17 @@
 import streamlit as st
 
-# 1. Hero Banner / Judul Utama
+# 1. Hero Banner / Judul Utama (Diubah menjadi warna Biru)
 st.markdown("""
-    <div style="background-color: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border-left: 6px solid #ff4b4b;">
-        <h1 style="color: #1e293b; margin-bottom: 0.5rem; font-size: 2.2rem;">Tentang Kami</h1>
+    <div style="background-color: #f8f9fa; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; border-left: 6px solid #1d4ed8;">
+        <h1 style="color: #1d4ed8; margin-bottom: 0.5rem; font-size: 2.2rem;">Tentang Kami</h1>
         <p style="color: #475569; font-size: 1.1rem; line-height: 1.6;">
             <b>Master Bimbel</b> adalah platform bimbingan belajar kedokteran terpercaya yang dirancang khusus untuk membantu mahasiswa kedokteran dan calon dokter meraih impian akademisnya. Kami memahami bahwa perjalanan menjadi seorang dokter membutuhkan dedikasi tinggi, pemahaman materi yang mendalam, dan strategi belajar yang tepat.
         </p>
     </div>
 """, unsafe_allow_html=True)
 
-# 2. Sub-judul
-st.markdown("### 🚀 Mengapa Memilih Kami?")
+# 2. Sub-judul (Diubah menjadi warna Biru)
+st.markdown("### :blue[🚀 Mengapa Memilih Kami?]")
 st.write("Kami memberikan fasilitas dan metode belajar terbaik untuk mendampingi perjalanan studi kedokteranmu.")
 st.write("")
 
