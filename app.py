@@ -1,20 +1,50 @@
+import base64
 import streamlit as st
 
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
-# Sembunyikan sidebar bawaan Streamlit
-st.markdown("""
-    <style>
-        [data-testid="stSidebarNav"] {display: none;}
-        [data-testid="stSidebar"] {display: none;}
+# Fungsi untuk membaca background.jpg lokal dan mengubahnya ke CSS Base64
+def set_global_background(image_path="background.jpg"):
+    try:
+        with open(image_path, "rb") as f:
+            data = f.read()
+        b64_img = base64.b64encode(data).decode()
         
-        /* Menghilangkan padding bawaan paling atas Streamlit */
-        .block-container {
-            padding-top: 1rem;
-        }
-    </style>
-""", unsafe_allow_html=True)
+        bg_css = f"""
+        <style>
+            /* Mengubah Background Utama Seluruh Halaman */
+            .stApp {{
+                background-image: url("data:image/jpeg;base64,{b64_img}");
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+            }}
+
+            /* Menghilangkan background header bawaan Streamlit agar menyatu */
+            header[data-testid="stHeader"] {{
+                background-color: rgba(0, 0, 0, 0);
+            }}
+
+            /* Sembunyikan Sidebar Bawaan */
+            [data-testid="stSidebarNav"] {{display: none;}}
+            [data-testid="stSidebar"] {{display: none;}}
+
+            /* Menghilangkan padding bawaan paling atas */
+            .block-container {{
+                padding-top: 1rem;
+            }}
+        </style>
+        """
+        st.markdown(bg_css, unsafe_allow_html=True)
+    except Exception as e:
+        # Jika file gambar gagal dibaca
+        st.warning(f"File background '{image_path}' tidak ditemukan di folder utama.")
+
+# Panggil fungsi background global
+set_global_background("background.jpg")
+
 
 # 2. Definisikan Halaman Menu
 tentang_kami_page = st.Page("pages/tentang_kami.py", title="Tentang Kami", icon="🏢")
@@ -30,7 +60,6 @@ pg = st.navigation(
 )
 
 # 3. Custom Banner Header dengan Gambar Background
-# Gambar diambil langsung dari repositori GitHub milikmu
 banner_url = "https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/pages/banner.jpg"
 
 st.markdown(f"""
