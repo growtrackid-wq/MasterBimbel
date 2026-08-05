@@ -22,7 +22,7 @@ with st.expander("Bagaimana cara mendaftar di Masterbimbel?"):
 with st.expander("Program pembelajaran apa saja yang tersedia?"):
     st.write(
         "Masterbimbel menyediakan program bimbingan belajar fokus kedokteran dan kesehatan, "
-        "seperti Bimbingan Reteker Kardiologi, Blok Akademik, Persiapan UKMPPD, dan tryout latihan soal interaktif."
+        "seperti Bimbingan Reteker, Blok Akademik, Persiapan UKMPPD, dan tryout latihan soal interaktif."
     )
 
 with st.expander("Apakah ada jadwal bimbingan tatap muka / offline?"):
