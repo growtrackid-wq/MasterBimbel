@@ -13,7 +13,7 @@ def set_global_background(image_path="background.jpg"):
         
         bg_css = f"""
         <style>
-            /* 1. Mengubah Background Utama Seluruh Halaman */
+            /* 1. Background Utama */
             .stApp {{
                 background-image: url("data:image/jpeg;base64,{b64_img}");
                 background-size: cover;
@@ -22,7 +22,7 @@ def set_global_background(image_path="background.jpg"):
                 background-attachment: fixed;
             }}
 
-            /* 2. Memaksa Teks & Judul Tetap Gelap dan Jelas */
+            /* 2. Warna Teks Utama */
             .stApp p, .stApp label, .stApp li {{
                 color: #0f172a !important;
             }}
@@ -32,70 +32,61 @@ def set_global_background(image_path="background.jpg"):
                 font-weight: 700 !important;
             }}
 
-            /* 3. Style Khusus Tombol Popover (Menu) */
-            div[data-testid="stPopover"] > button {{
+            /* 3. PAKSA TOMBOL POPOVER (MENU) AGAR PUTIH DI DARK MODE */
+            div[data-testid="stPopover"] button,
+            div[data-testid="stPopover"] [data-baseweb="button"] {{
                 background-color: #ffffff !important;
+                background: #ffffff !important;
                 color: #0f172a !important;
                 border: 1px solid #cbd5e1 !important;
-                font-weight: 600 !important;
             }}
-            
-            div[data-testid="stPopover"] > button p,
-            div[data-testid="stPopover"] > button span,
-            div[data-testid="stPopover"] > button svg {{
+
+            /* Paksa Teks dan Icon Panah di Dalam Tombol Menu */
+            div[data-testid="stPopover"] button *,
+            div[data-testid="stPopover"] [data-baseweb="button"] * {{
                 color: #0f172a !important;
                 fill: #0f172a !important;
             }}
 
-            /* 4. Style Khusus Tombol Biasa (Masuk) */
-            .stButton > button {{
+            /* 4. PAKSA TOMBOL MASUK AGAR PUTIH */
+            .stButton > button:not([kind="primary"]) {{
                 background-color: #ffffff !important;
+                background: #ffffff !important;
                 color: #0f172a !important;
                 border: 1px solid #cbd5e1 !important;
-                font-weight: 600 !important;
             }}
-            
-            .stButton > button p,
-            .stButton > button span {{
+            .stButton > button:not([kind="primary"]) * {{
                 color: #0f172a !important;
             }}
 
-            /* 5. Style Tombol Primary (Daftar) */
+            /* 5. PAKSA TOMBOL DAFTAR (PRIMARY) */
             .stButton > button[kind="primary"] {{
                 background-color: #ff4b4b !important;
+                background: #ff4b4b !important;
                 border: none !important;
             }}
-            
-            .stButton > button[kind="primary"] p,
-            .stButton > button[kind="primary"] span {{
+            .stButton > button[kind="primary"] * {{
                 color: #ffffff !important;
             }}
 
-            /* Hover Effect untuk Tombol */
-            .stButton > button:hover, div[data-testid="stPopover"] > button:hover {{
-                border-color: #0f172a !important;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
-            }}
-
-            /* 6. Memastikan Container / Cards (Kotak Fitur) Selalu Putih dan Bergaris Jelas di Semua Mode */
-            div[data-testid="stVerticalBlockBorderWrapper"] > div {{
-                background-color: rgba(255, 255, 255, 0.95) !important;
+            /* 6. PERBAIKAN KOTAK CARD / FITUR (Agar muncul di Dark Mode) */
+            div[data-testid="stVerticalBlockBorderWrapper"] {{
+                background-color: rgba(255, 255, 255, 0.9) !important;
+                border: 1px solid #cbd5e1 !important;
                 border-radius: 10px !important;
-                padding: 14px !important;
-                border: 1px solid #e2e8f0 !important;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
             }}
 
-            /* 7. Menghilangkan Background Header Bawaan Streamlit */
+            /* Header transparan */
             header[data-testid="stHeader"] {{
                 background-color: rgba(0, 0, 0, 0) !important;
             }}
 
-            /* 8. Sembunyikan Sidebar Bawaan */
-            [data-testid="stSidebarNav"] {{display: none;}}
-            [data-testid="stSidebar"] {{display: none;}}
+            /* Sembunyikan Sidebar Bawaan */
+            [data-testid="stSidebarNav"], [data-testid="stSidebar"] {{
+                display: none;
+            }}
 
-            /* 9. Padding Atas */
             .block-container {{
                 padding-top: 1rem;
             }}
@@ -171,5 +162,33 @@ with col_auth:
 
 st.divider()
 
-# 5. Jalankan Halaman Aktif
+# 5. Contoh Struktur Fitur dengan Border Container (Agar Kotak Muncul Konsisten)
+st.markdown("### 🚀 Mengapa Memilih Kami?")
+st.write("Kami memberikan fasilitas dan metode belajar terbaik untuk mendampingi perjalanan studi kedokteranmu.")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    with st.container(border=True):
+        st.markdown("#### 🧑‍⚕️ Pengajar Profesional")
+        st.write("Dibimbing langsung oleh mentor dokter teruji dan berpengalaman di bidangnya.")
+
+with col2:
+    with st.container(border=True):
+        st.markdown("#### 📚 Materi Terintegrasi")
+        st.write("Kurikulum khusus untuk persiapan perkuliahan, ujian koas, hingga UKMPPD (CBT & OSCE).")
+
+col3, col4 = st.columns(2)
+
+with col3:
+    with st.container(border=True):
+        st.markdown("#### 💡 Metode Interaktif")
+        st.write("Pembahasan soal yang mendalam (high-yield) serta pendampingan belajar yang terstruktur.")
+
+with col4:
+    with st.container(border=True):
+        st.markdown("#### 🏆 Fasilitas Terbaik")
+        st.write("Akses latihan soal, modul eksklusif, dan diskusi interaktif kapan saja dan di mana saja.")
+
+# 6. Jalankan Halaman Utama/Subhalaman
 pg.run()
