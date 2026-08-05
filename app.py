@@ -4,7 +4,7 @@ import streamlit as st
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
-# Fungsi untuk membaca background.jpg lokal dan mengatur CSS responsif untuk Light & Dark Mode
+# Fungsi untuk membaca background.jpg lokal dan mengatur CSS responsif
 def set_global_background(image_path="background.jpg"):
     try:
         with open(image_path, "rb") as f:
@@ -22,8 +22,8 @@ def set_global_background(image_path="background.jpg"):
                 background-attachment: fixed;
             }}
 
-            /* 2. Memaksa Warna Teks Tetap Gelap (Kontras dengan Background Terang) di Dark/Light Mode */
-            .stApp p, .stApp span, .stApp label, .stApp div, .stApp li {{
+            /* 2. Memaksa Hanya Teks/Judul/Paragraf yang Gelap (Tanpa Merusak Tombol) */
+            .stApp p, .stApp label, .stApp li {{
                 color: #0f172a !important;
             }}
             
@@ -32,7 +32,28 @@ def set_global_background(image_path="background.jpg"):
                 font-weight: 700 !important;
             }}
 
-            /* 3. Beri Card / Container Latar Belakang Putih Semitransparan Agar Teks Selalu Jelas */
+            /* 3. Perbaikan Latar Belakang & Teks pada Tombol Streamlit (Menu, Masuk, Daftar) */
+            .stButton > button, div[data-testid="stPopover"] > button {{
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+                font-weight: 600 !important;
+            }}
+
+            /* Tombol Primary (Daftar) */
+            .stButton > button[kind="primary"] {{
+                background-color: #ff4b4b !important;
+                color: #ffffff !important;
+                border: none !important;
+            }}
+
+            /* Hover effect pada tombol */
+            .stButton > button:hover, div[data-testid="stPopover"] > button:hover {{
+                border-color: #0f172a !important;
+                color: #0f172a !important;
+            }}
+
+            /* 4. Beri Card / Container Latar Belakang Putih Semitransparan */
             [data-testid="stMetric"], .stCard, div[data-testid="stExpander"] {{
                 background-color: rgba(255, 255, 255, 0.9) !important;
                 border-radius: 10px !important;
@@ -40,14 +61,13 @@ def set_global_background(image_path="background.jpg"):
                 border: 1px solid rgba(0,0,0,0.08) !important;
             }}
 
-            /* 4. Perbaikan Teks & Background di dalam Container Border Streamlit (st.container(border=True)) */
             div[data-testid="stVerticalBlockBorderWrapper"] > div {{
                 background-color: rgba(255, 255, 255, 0.85) !important;
                 border-radius: 10px !important;
                 padding: 10px !important;
             }}
 
-            /* 5. Menghilangkan background header bawaan Streamlit agar menyatu */
+            /* 5. Menghilangkan background header bawaan Streamlit */
             header[data-testid="stHeader"] {{
                 background-color: rgba(0, 0, 0, 0) !important;
             }}
@@ -64,7 +84,6 @@ def set_global_background(image_path="background.jpg"):
         """
         st.markdown(bg_css, unsafe_allow_html=True)
     except Exception as e:
-        # Jika file gambar gagal dibaca
         st.warning(f"File background '{image_path}' tidak ditemukan di folder utama.")
 
 # Panggil fungsi background global
