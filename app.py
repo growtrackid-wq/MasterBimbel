@@ -22,7 +22,7 @@ def set_global_background(image_path="background.jpg"):
                 background-attachment: fixed;
             }}
 
-            /* 2. Memaksa Hanya Teks/Judul/Paragraf yang Gelap (Tanpa Merusak Tombol) */
+            /* 2. Memaksa Teks & Judul Tetap Gelap dan Jelas */
             .stApp p, .stApp label, .stApp li {{
                 color: #0f172a !important;
             }}
@@ -32,51 +32,70 @@ def set_global_background(image_path="background.jpg"):
                 font-weight: 700 !important;
             }}
 
-            /* 3. Perbaikan Latar Belakang & Teks pada Tombol Streamlit (Menu, Masuk, Daftar) */
-            .stButton > button, div[data-testid="stPopover"] > button {{
+            /* 3. Style Khusus Tombol Popover (Menu) */
+            div[data-testid="stPopover"] > button {{
                 background-color: #ffffff !important;
                 color: #0f172a !important;
                 border: 1px solid #cbd5e1 !important;
                 font-weight: 600 !important;
             }}
-
-            /* Tombol Primary (Daftar) */
-            .stButton > button[kind="primary"] {{
-                background-color: #ff4b4b !important;
-                color: #ffffff !important;
-                border: none !important;
+            
+            div[data-testid="stPopover"] > button p,
+            div[data-testid="stPopover"] > button span,
+            div[data-testid="stPopover"] > button svg {{
+                color: #0f172a !important;
+                fill: #0f172a !important;
             }}
 
-            /* Hover effect pada tombol */
-            .stButton > button:hover, div[data-testid="stPopover"] > button:hover {{
-                border-color: #0f172a !important;
+            /* 4. Style Khusus Tombol Biasa (Masuk) */
+            .stButton > button {{
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                border: 1px solid #cbd5e1 !important;
+                font-weight: 600 !important;
+            }}
+            
+            .stButton > button p,
+            .stButton > button span {{
                 color: #0f172a !important;
             }}
 
-            /* 4. Beri Card / Container Latar Belakang Putih Semitransparan */
-            [data-testid="stMetric"], .stCard, div[data-testid="stExpander"] {{
-                background-color: rgba(255, 255, 255, 0.9) !important;
-                border-radius: 10px !important;
-                padding: 12px !important;
-                border: 1px solid rgba(0,0,0,0.08) !important;
+            /* 5. Style Tombol Primary (Daftar) */
+            .stButton > button[kind="primary"] {{
+                background-color: #ff4b4b !important;
+                border: none !important;
+            }}
+            
+            .stButton > button[kind="primary"] p,
+            .stButton > button[kind="primary"] span {{
+                color: #ffffff !important;
             }}
 
+            /* Hover Effect untuk Tombol */
+            .stButton > button:hover, div[data-testid="stPopover"] > button:hover {{
+                border-color: #0f172a !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1) !important;
+            }}
+
+            /* 6. Memastikan Container / Cards (Kotak Fitur) Selalu Putih dan Bergaris Jelas di Semua Mode */
             div[data-testid="stVerticalBlockBorderWrapper"] > div {{
-                background-color: rgba(255, 255, 255, 0.85) !important;
+                background-color: rgba(255, 255, 255, 0.95) !important;
                 border-radius: 10px !important;
-                padding: 10px !important;
+                padding: 14px !important;
+                border: 1px solid #e2e8f0 !important;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
             }}
 
-            /* 5. Menghilangkan background header bawaan Streamlit */
+            /* 7. Menghilangkan Background Header Bawaan Streamlit */
             header[data-testid="stHeader"] {{
                 background-color: rgba(0, 0, 0, 0) !important;
             }}
 
-            /* 6. Sembunyikan Sidebar Bawaan */
+            /* 8. Sembunyikan Sidebar Bawaan */
             [data-testid="stSidebarNav"] {{display: none;}}
             [data-testid="stSidebar"] {{display: none;}}
 
-            /* 7. Menghilangkan padding bawaan paling atas */
+            /* 9. Padding Atas */
             .block-container {{
                 padding-top: 1rem;
             }}
@@ -103,7 +122,7 @@ pg = st.navigation(
     position="hidden"
 )
 
-# 3. Custom Banner Header dengan Gambar Background
+# 3. Custom Banner Header
 banner_url = "https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/pages/banner.jpg"
 
 st.markdown(f"""
@@ -125,7 +144,7 @@ st.markdown(f"""
     </div>
 """, unsafe_allow_html=True)
 
-# 4. Tombol Menu & Auth (Di Bawah Banner / Sejajar Garis Horizontal)
+# 4. Tombol Menu & Auth
 col_menu, col_space, col_auth = st.columns([2, 5, 3])
 
 with col_menu:
