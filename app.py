@@ -4,7 +4,7 @@ import streamlit as st
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
-# Fungsi untuk membaca background.jpg lokal dan mengubahnya ke CSS Base64
+# Fungsi untuk membaca background.jpg lokal dan mengatur CSS responsif untuk Light & Dark Mode
 def set_global_background(image_path="background.jpg"):
     try:
         with open(image_path, "rb") as f:
@@ -13,7 +13,7 @@ def set_global_background(image_path="background.jpg"):
         
         bg_css = f"""
         <style>
-            /* Mengubah Background Utama Seluruh Halaman */
+            /* 1. Mengubah Background Utama Seluruh Halaman */
             .stApp {{
                 background-image: url("data:image/jpeg;base64,{b64_img}");
                 background-size: cover;
@@ -22,16 +22,41 @@ def set_global_background(image_path="background.jpg"):
                 background-attachment: fixed;
             }}
 
-            /* Menghilangkan background header bawaan Streamlit agar menyatu */
-            header[data-testid="stHeader"] {{
-                background-color: rgba(0, 0, 0, 0);
+            /* 2. Memaksa Warna Teks Tetap Gelap (Kontras dengan Background Terang) di Dark/Light Mode */
+            .stApp p, .stApp span, .stApp label, .stApp div, .stApp li {{
+                color: #0f172a !important;
+            }}
+            
+            .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+                color: #0f172a !important;
+                font-weight: 700 !important;
             }}
 
-            /* Sembunyikan Sidebar Bawaan */
+            /* 3. Beri Card / Container Latar Belakang Putih Semitransparan Agar Teks Selalu Jelas */
+            [data-testid="stMetric"], .stCard, div[data-testid="stExpander"] {{
+                background-color: rgba(255, 255, 255, 0.9) !important;
+                border-radius: 10px !important;
+                padding: 12px !important;
+                border: 1px solid rgba(0,0,0,0.08) !important;
+            }}
+
+            /* 4. Perbaikan Teks & Background di dalam Container Border Streamlit (st.container(border=True)) */
+            div[data-testid="stVerticalBlockBorderWrapper"] > div {{
+                background-color: rgba(255, 255, 255, 0.85) !important;
+                border-radius: 10px !important;
+                padding: 10px !important;
+            }}
+
+            /* 5. Menghilangkan background header bawaan Streamlit agar menyatu */
+            header[data-testid="stHeader"] {{
+                background-color: rgba(0, 0, 0, 0) !important;
+            }}
+
+            /* 6. Sembunyikan Sidebar Bawaan */
             [data-testid="stSidebarNav"] {{display: none;}}
             [data-testid="stSidebar"] {{display: none;}}
 
-            /* Menghilangkan padding bawaan paling atas */
+            /* 7. Menghilangkan padding bawaan paling atas */
             .block-container {{
                 padding-top: 1rem;
             }}
@@ -72,10 +97,10 @@ st.markdown(f"""
         margin-bottom: 1rem;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     ">
-        <div style="display: flex; justify-content: space-between; align-items: center; color: white;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
             <div>
-                <h1 style="color: white; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px;">MASTER BIMBEL</h1>
-                <p style="color: #f1f5f9; margin: 5px 0 0 0; font-size: 1rem; font-weight: 500;">Belajar Tepat, Lulus Cepat!!</p>
+                <h1 style="color: #ffffff !important; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px;">MASTER BIMBEL</h1>
+                <p style="color: #f1f5f9 !important; margin: 5px 0 0 0; font-size: 1rem; font-weight: 500;">Belajar Tepat, Lulus Cepat!!</p>
             </div>
         </div>
     </div>
