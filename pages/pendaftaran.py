@@ -113,7 +113,7 @@ with st.container(border=True):
                 "Kelas Reguler Pre-Klinik (Pendampingan Ujian Semester)",
                 "Kelas Intensif Stase Klinik (Koas)",
                 "Bimbingan UKMPPD CBT (Try Out & Pembahasan High-Yield)",
-                "Bimbingan UKMPPD OSCE (Simulasi & Checksheet)",
+                "Kelas UAS",
                 "Private 1-on-1 Mentoring"
             ]
         )
