@@ -1,10 +1,82 @@
 import streamlit as st
 import urllib.parse
+from datetime import datetime
+import gspread
+from google.oauth2.service_account import Credentials
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+import io
 
 st.markdown("## 📝 Formulir Pendaftaran Bimbingan")
 st.write("Lengkapi data diri Anda di bawah ini untuk memulai bimbingan di **Master Bimbel**.")
 
-# Buat Container Putih Terstruktur
+# ==========================================
+# FUNGSI KONEKSI KE GOOGLE DRIVE & SHEETS
+# ==========================================
+def simpan_ke_google(nama, email_pendaftar, no_wa, univ, status, program, catatan_user, file_bukti):
+    try:
+        # 1. Ambil kredensial dari st.secrets
+        credentials_dict = dict(st.secrets["gcp_service_account"])
+        
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        
+        creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
+        
+        # 2. Upload file ke Google Drive (jika ada file yang diunggah)
+        link_bukti_drive = "-"
+        if file_bukti is not None:
+            drive_service = build('drive', 'v3', credentials=creds)
+            folder_id = st.secrets["gdrive"]["folder_id"]
+            
+            file_metadata = {
+                'name': f"{nama}_{file_bukti.name}",
+                'parents': [folder_id]
+            }
+            
+            media = MediaIoBaseUpload(
+                io.BytesIO(file_bukti.getvalue()),
+                mimetype=file_bukti.type,
+                resumable=True
+            )
+            
+            uploaded_file = drive_service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id, webViewLink'
+            ).execute()
+            
+            link_bukti_drive = uploaded_file.get('webViewLink', '-')
+
+        # 3. Simpan baris data ke Google Sheets
+        gc = gspread.authorize(creds)
+        spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
+        sheet = gc.open_by_key(spreadsheet_id).sheet1  # Mengambil tab pertama
+        
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        row_data = [
+            timestamp,
+            nama,
+            email_pendaftar,
+            no_wa,
+            univ,
+            status,
+            program,
+            catatan_user if catatan_user else "-",
+            link_bukti_drive
+        ]
+        
+        sheet.append_row(row_data)
+        return True, link_bukti_drive
+
+    except Exception as e:
+        return False, str(e)
+
+# ==========================================
+# TAMPILAN FORMULIR PENDAFTARAN
+# ==========================================
 with st.container(border=True):
     with st.form("form_pendaftaran_lengkap", clear_on_submit=False):
         st.subheader("1. Data Diri Mahasiswa")
@@ -53,27 +125,34 @@ with st.container(border=True):
         if not nama_lengkap or not email or not no_wa or not universitas:
             st.error("⚠️ Mohon lengkapi seluruh kolom bertanda bintang (*) sebelum melanjutkan.")
         else:
-            st.success("✅ Form Pendaftaran Berhasil Diisi!")
+            with st.spinner("Sedang menyimpan data pendaftaran..."):
+                sukses, hasil = simpan_ke_google(
+                    nama_lengkap, email, no_wa, universitas, status_mhs, program_pilihan, catatan, ktm_file
+                )
             
-            # Format Pesan Otomatis ke WhatsApp Admin
-            pesan_wa = (
-                f"Halo Admin Master Bimbel, saya telah mengisi formulir pendaftaran via Website!\n\n"
-                f"📌 *DETAIL PENDAFTARAN*\n"
-                f"• *Nama:* {nama_lengkap}\n"
-                f"• *Email:* {email}\n"
-                f"• *No WA:* {no_wa}\n"
-                f"• *Universitas:* {universitas}\n"
-                f"• *Status:* {status_mhs}\n"
-                f"• *Program:* {program_pilihan}\n"
-                f"• *Catatan:* {catatan if catatan else '-'}\n"
-            )
-            
-            # GANTI NOMOR DI BAWAH INI DENGAN NOMOR ADMIN ASLI (Gunakan Kode Negara 62)
-            nomor_admin = "6282157263167" 
-            link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
+            if sukses:
+                st.success("✅ Form Pendaftaran Berhasil Diisi dan Tersimpan!")
+                
+                # Format Pesan Otomatis ke WhatsApp Admin
+                pesan_wa = (
+                    f"Halo Admin Master Bimbel, saya telah mengisi formulir pendaftaran via Website!\n\n"
+                    f"📌 *DETAIL PENDAFTARAN*\n"
+                    f"• *Nama:* {nama_lengkap}\n"
+                    f"• *Email:* {email}\n"
+                    f"• *No WA:* {no_wa}\n"
+                    f"• *Universitas:* {universitas}\n"
+                    f"• *Status:* {status_mhs}\n"
+                    f"• *Program:* {program_pilihan}\n"
+                    f"• *Catatan:* {catatan if catatan else '-'}\n"
+                )
+                
+                nomor_admin = "6282157263167" 
+                link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
 
-            st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran Anda ke WhatsApp Admin.")
-            st.link_button("📲 Konfirmasi & Kirim Data ke WhatsApp Admin", link_whatsapp, use_container_width=True)
+                st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran Anda ke WhatsApp Admin.")
+                st.link_button("📲 Konfirmasi & Kirim Data ke WhatsApp Admin", link_whatsapp, use_container_width=True)
+            else:
+                st.error(f"❌ Gagal menyimpan data ke database. Error: {hasil}")
 
 # Tombol Kembali ke Dashboard
 st.markdown("<br>", unsafe_allow_html=True)
