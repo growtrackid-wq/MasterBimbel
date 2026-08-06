@@ -15,43 +15,48 @@ st.write("Lengkapi data diri Anda di bawah ini untuk memulai bimbingan di **Mast
 # ==========================================
 def upload_ke_google_drive(file_uploaded, creds, nama_pendaftar):
     try:
+        # 1. Inisialisasi Drive API Service
         drive_service = build('drive', 'v3', credentials=creds)
         folder_id = st.secrets["gdrive"]["folder_id"]
 
-        # Nama file di Google Drive
-        nama_file = f"Bukti_{nama_pendaftar}_{file_uploaded.name}"
+        # 2. Ambil data file & reset pointer pembacaan
+        file_bytes = file_uploaded.getvalue()
+        file_name = f"Bukti_{nama_pendaftar}_{file_uploaded.name}".replace(" ", "_")
+        mime_type = file_uploaded.type if file_uploaded.type else 'application/octet-stream'
 
         file_metadata = {
-            'name': nama_file,
+            'name': file_name,
             'parents': [folder_id]
         }
 
-        # Konversi file Streamlit ke format media upload
         media = MediaIoBaseUpload(
-            io.BytesIO(file_uploaded.getvalue()),
-            mimetype=file_uploaded.type,
-            resumable=True
+            io.BytesIO(file_bytes),
+            mimetype=mime_type,
+            resumable=False
         )
 
-        # Upload file ke Drive
-        file = drive_service.files().create(
+        # 3. Eksekusi Upload File
+        uploaded_file = drive_service.files().create(
             body=file_metadata,
             media_body=media,
             fields='id, webViewLink'
         ).execute()
 
-        # Kembalikan link file yang bisa dibuka
-        return file.get('webViewLink')
+        # 4. Ambil Link File Drive
+        link_file = uploaded_file.get('webViewLink')
+        return link_file if link_file else f"https://drive.google.com/open?id={uploaded_file.get('id')}"
+
     except Exception as e:
-        print(f"Error Upload Drive: {e}")
-        return "Gagal Upload File"
+        # Menampilkan pesan error spesifik jika terjadi kegagalan
+        return f"Gagal Upload: {str(e)}"
+
 
 # ==========================================
 # FUNGSI KONEKSI KE GOOGLE SHEETS & DRIVE
 # ==========================================
 def simpan_ke_google_sheets(nama, email_pendaftar, no_wa, univ, status, program, catatan_user, file_uploaded):
     try:
-        # 1. Kredensial dari st.secrets
+        # 1. Kredensial dari st.secrets dengan Scope Spreadsheets & Drive
         credentials_dict = dict(st.secrets["gcp_service_account"])
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
@@ -59,7 +64,7 @@ def simpan_ke_google_sheets(nama, email_pendaftar, no_wa, univ, status, program,
         ]
         creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
         
-        # 2. Upload File Bukti Pembayaran ke Google Drive jika ada
+        # 2. Upload File Bukti Pembayaran jika ada
         if file_uploaded is not None:
             info_bukti = upload_ke_google_drive(file_uploaded, creds, nama)
         else:
