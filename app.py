@@ -1,20 +1,77 @@
+import base64
 import streamlit as st
 
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
-# Sembunyikan sidebar bawaan Streamlit
-st.markdown("""
+# Fungsi penanganan background & styling CSS global
+def apply_custom_styles(image_path="background.jpg"):
+    bg_style = ""
+    try:
+        with open(image_path, "rb") as f:
+            data = f.read()
+        b64_img = base64.b64encode(data).decode()
+        bg_style = f'background-image: url("data:image/jpeg;base64,{b64_img}"); background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;'
+    except Exception:
+        pass # Jika background.jpg tidak ada, gunakan background standar Streamlit
+
+    css = f"""
     <style>
-        [data-testid="stSidebarNav"] {display: none;}
-        [data-testid="stSidebar"] {display: none;}
-        
+        /* Background Utama */
+        .stApp {{
+            {bg_style}
+        }}
+
+        /* Sembunyikan Sidebar Bawaan */
+        [data-testid="stSidebarNav"], [data-testid="stSidebar"] {{
+            display: none !important;
+        }}
+
         /* Menghilangkan padding bawaan paling atas Streamlit */
-        .block-container {
+        .block-container {{
             padding-top: 1rem;
-        }
+        }}
+
+        /* Perbaikan Warna Teks Utama */
+        .stApp p, .stApp label, .stApp li {{
+            color: #0f172a !important;
+        }}
+        .stApp h1, .stApp h2, .stApp h3, .stApp h4, .stApp h5, .stApp h6 {{
+            color: #0f172a !important;
+            font-weight: 700 !important;
+        }}
+
+        /* Memastikan Tombol Popover (Menu) & Masuk Terbaca Jelas */
+        div[data-testid="stPopover"] button,
+        .stButton > button:not([kind="primary"]) {{
+            background-color: #ffffff !important;
+            color: #0f172a !important;
+            border: 1px solid #cbd5e1 !important;
+        }}
+        div[data-testid="stPopover"] button *,
+        .stButton > button:not([kind="primary"]) * {{
+            color: #0f172a !important;
+        }}
+
+        /* Tombol Utama (Daftar) */
+        .stButton > button[kind="primary"] {{
+            background-color: #ff4b4b !important;
+            border: none !important;
+        }}
+        .stButton > button[kind="primary"] * {{
+            color: #ffffff !important;
+        }}
+
+        /* Header Transparan */
+        header[data-testid="stHeader"] {{
+            background-color: rgba(0, 0, 0, 0) !important;
+        }}
     </style>
-""", unsafe_allow_html=True)
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+apply_custom_styles("background.jpg")
+
 
 # 2. Definisikan Halaman Menu
 tentang_kami_page = st.Page("pages/tentang_kami.py", title="Tentang Kami", icon="🏢")
@@ -24,13 +81,24 @@ faq_page = st.Page("pages/faq.py", title="FAQ", icon="❓")
 kontak_page = st.Page("pages/kontak.py", title="Kontak", icon="📞")
 kebijakan_page = st.Page("pages/kebijakan.py", title="Kebijakan Privasi", icon="🛡️")
 
+# Ditambahkan untuk Cara 2 (Halaman Pendaftaran Terpisah)
+pendaftaran_page = st.Page("pages/pendaftaran.py", title="Pendaftaran", icon="📝")
+
 pg = st.navigation(
-    [tentang_kami_page, materi_page, testimoni_page, faq_page, kontak_page, kebijakan_page], 
+    [
+        tentang_kami_page, 
+        materi_page, 
+        testimoni_page, 
+        faq_page, 
+        kontak_page, 
+        kebijakan_page, 
+        pendaftaran_page
+    ], 
     position="hidden"
 )
 
+
 # 3. Custom Banner Header dengan Gambar Background
-# Gambar diambil langsung dari repositori GitHub milikmu
 banner_url = "https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/pages/banner.jpg"
 
 st.markdown(f"""
@@ -45,12 +113,13 @@ st.markdown(f"""
     ">
         <div style="display: flex; justify-content: space-between; align-items: center; color: white;">
             <div>
-                <h1 style="color: white; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px;">MASTER BIMBEL</h1>
-                <p style="color: #f1f5f9; margin: 5px 0 0 0; font-size: 1rem; font-weight: 500;">Belajar Tepat, Lulus Cepat!!</p>
+                <h1 style="color: white !important; margin: 0; font-size: 2.2rem; font-weight: 800; letter-spacing: 1px;">MASTER BIMBEL</h1>
+                <p style="color: #f1f5f9 !important; margin: 5px 0 0 0; font-size: 1rem; font-weight: 500;">Belajar Tepat, Lulus Cepat!!</p>
             </div>
         </div>
     </div>
 """, unsafe_allow_html=True)
+
 
 # 4. Tombol Menu & Auth (Di Bawah Banner / Sejajar Garis Horizontal)
 col_menu, col_space, col_auth = st.columns([2, 5, 3])
@@ -75,7 +144,9 @@ with col_auth:
     with col_masuk:
         st.button("Masuk", use_container_width=True)
     with col_daftar:
-        st.button("Daftar", type="primary", use_container_width=True)
+        # Tombol ini mengarahkan mahasiswa ke halaman pages/pendaftaran.py
+        if st.button("Daftar", type="primary", use_container_width=True):
+            st.switch_page("pages/pendaftaran.py")
 
 st.divider()
 
