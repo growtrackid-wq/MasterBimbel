@@ -1,0 +1,81 @@
+import streamlit as st
+import urllib.parse
+
+st.markdown("## 📝 Formulir Pendaftaran Bimbingan")
+st.write("Lengkapi data diri Anda di bawah ini untuk memulai bimbingan di **Master Bimbel**.")
+
+# Buat Container Putih Terstruktur
+with st.container(border=True):
+    with st.form("form_pendaftaran_lengkap", clear_on_submit=False):
+        st.subheader("1. Data Diri Mahasiswa")
+        col_nama, col_email = st.columns(2)
+        with col_nama:
+            nama_lengkap = st.text_input("Nama Lengkap (dengan Gelar jika ada)*", placeholder="contoh: Ahmad Subagja, S.Ked")
+        with col_email:
+            email = st.text_input("Alamat Email*", placeholder="contoh: ahmad@gmail.com")
+            
+        col_hp, col_univ = st.columns(2)
+        with col_hp:
+            no_wa = st.text_input("Nomor WhatsApp (Aktif)*", placeholder="contoh: 081234567890")
+        with col_univ:
+            universitas = st.text_input("Asal Universitas / Fakultas Kedokteran*", placeholder="contoh: FK Universitas Indonesia")
+
+        st.divider()
+        st.subheader("2. Program & Jenjang Bimbingan")
+        
+        status_mhs = st.radio(
+            "Status Mahasiswa Saat Ini*",
+            ["Pre-Klinik (Semester 1-8)", "Kepaniteraan Klinik (Koas)", "Persiapan UKMPPD / Alumni"],
+            horizontal=True
+        )
+        
+        program_pilihan = st.selectbox(
+            "Pilih Program Utama*",
+            [
+                "Kelas Reguler Pre-Klinik (Pendampingan Ujian Semester)",
+                "Kelas Intensif Stase Klinik (Koas)",
+                "Bimbingan UKMPPD CBT (Try Out & Pembahasan High-Yield)",
+                "Bimbingan UKMPPD OSCE (Simulasi & Checksheet)",
+                "Private 1-on-1 Mentoring"
+            ]
+        )
+
+        catatan = st.text_area("Catatan Khusus / Target Belajar", placeholder="Tuliskan mata kuliah atau stase yang ingin difokuskan...")
+
+        st.divider()
+        st.subheader("3. Dokumen Pendukung (Opsional)")
+        ktm_file = st.file_uploader("Unggah Kartu Tanda Mahasiswa (KTM) / Identitas FK", type=["jpg", "jpeg", "png", "pdf"])
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        btn_submit = st.form_submit_button("Kirim Pendaftaran", type="primary", use_container_width=True)
+
+    if btn_submit:
+        if not nama_lengkap or not email or not no_wa or not universitas:
+            st.error("⚠️ Mohon lengkapi seluruh kolom bertanda bintang (*) sebelum melanjutkan.")
+        else:
+            st.success("✅ Form Pendaftaran Berhasil Diisi!")
+            
+            # Format Pesan Otomatis ke WhatsApp Admin
+            pesan_wa = (
+                f"Halo Admin Master Bimbel, saya telah mengisi formulir pendaftaran via Website!\n\n"
+                f"📌 *DETAIL PENDAFTARAN*\n"
+                f"• *Nama:* {nama_lengkap}\n"
+                f"• *Email:* {email}\n"
+                f"• *No WA:* {no_wa}\n"
+                f"• *Universitas:* {universitas}\n"
+                f"• *Status:* {status_mhs}\n"
+                f"• *Program:* {program_pilihan}\n"
+                f"• *Catatan:* {catatan if catatan else '-'}\n"
+            )
+            
+            # GANTI NOMOR DI BAWAH INI DENGAN NOMOR ADMIN ASLI (Gunakan Kode Negara 62)
+            nomor_admin = "6281234567890" 
+            link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
+
+            st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran Anda ke WhatsApp Admin.")
+            st.link_button("📲 Konfirmasi & Kirim Data ke WhatsApp Admin", link_whatsapp, use_container_width=True)
+
+# Tombol Kembali ke Dashboard
+st.markdown("<br>", unsafe_allow_html=True)
+if st.button("⬅️ Kembali ke Halaman Utama"):
+    st.switch_page("pages/tentang_kami.py")
