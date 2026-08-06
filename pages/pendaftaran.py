@@ -3,70 +3,56 @@ import urllib.parse
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
-import io
+import requests
+import base64
 
 st.markdown("## 📝 Formulir Pendaftaran Bimbingan")
 st.write("Lengkapi data diri Anda di bawah ini untuk memulai bimbingan di **Master Bimbel**.")
 
 # ==========================================
-# FUNGSI UPLOAD FILE KE GOOGLE DRIVE
+# FUNGSI UPLOAD FILE KE IMGBB
 # ==========================================
-def upload_ke_google_drive(file_uploaded, creds, nama_pendaftar):
+def upload_ke_imgbb(file_uploaded):
     try:
-        # 1. Inisialisasi Drive API Service
-        drive_service = build('drive', 'v3', credentials=creds)
-        folder_id = st.secrets["gdrive"]["folder_id"]
-
-        # 2. Ambil data file & reset pointer pembacaan
+        api_key = st.secrets["imgbb"]["api_key"]
+        
+        # Read file & encode base64
         file_bytes = file_uploaded.getvalue()
-        file_name = f"Bukti_{nama_pendaftar}_{file_uploaded.name}".replace(" ", "_")
-        mime_type = file_uploaded.type if file_uploaded.type else 'application/octet-stream'
-
-        file_metadata = {
-            'name': file_name,
-            'parents': [folder_id]
+        base64_image = base64.b64encode(file_bytes).decode('utf-8')
+        
+        # Kirim HTTP POST Request ke API ImgBB
+        url = "https://api.imgbb.com/1/upload"
+        payload = {
+            "key": api_key,
+            "image": base64_image
         }
-
-        media = MediaIoBaseUpload(
-            io.BytesIO(file_bytes),
-            mimetype=mime_type,
-            resumable=False
-        )
-
-        # 3. Eksekusi Upload File
-        uploaded_file = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, webViewLink'
-        ).execute()
-
-        # 4. Ambil Link File Drive
-        link_file = uploaded_file.get('webViewLink')
-        return link_file if link_file else f"https://drive.google.com/open?id={uploaded_file.get('id')}"
-
+        
+        response = requests.post(url, data=payload)
+        res_data = response.json()
+        
+        if res_data.get("success"):
+            # Mengembalikan link gambar langsung dari ImgBB
+            return res_data["data"]["url"]
+        else:
+            err_msg = res_data.get('error', {}).get('message', 'Unknown Error')
+            return f"Gagal Upload ImgBB: {err_msg}"
+            
     except Exception as e:
-        # Menampilkan pesan error spesifik jika terjadi kegagalan
         return f"Gagal Upload: {str(e)}"
 
-
 # ==========================================
-# FUNGSI KONEKSI KE GOOGLE SHEETS & DRIVE
+# FUNGSI KONEKSI KE GOOGLE SHEETS
 # ==========================================
 def simpan_ke_google_sheets(nama, email_pendaftar, no_wa, univ, status, program, catatan_user, file_uploaded):
     try:
-        # 1. Kredensial dari st.secrets dengan Scope Spreadsheets & Drive
+        # 1. Kredensial dari st.secrets (Scope Spreadsheet saja cukup)
         credentials_dict = dict(st.secrets["gcp_service_account"])
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
         creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
         
-        # 2. Upload File Bukti Pembayaran jika ada
+        # 2. Upload File Bukti Pembayaran via ImgBB jika ada
         if file_uploaded is not None:
-            info_bukti = upload_ke_google_drive(file_uploaded, creds, nama)
+            info_bukti = upload_ke_imgbb(file_uploaded)
         else:
             info_bukti = "Tidak Ada File"
 
@@ -145,7 +131,7 @@ with st.container(border=True):
         if not nama_lengkap or not email or not no_wa or not universitas:
             st.error("⚠️ Mohon lengkapi seluruh kolom bertanda bintang (*) sebelum melanjutkan.")
         else:
-            with st.spinner("Sedang menyimpan data & mengunggah bukti pembayaran..."):
+            with st.spinner("Sedang menyimpan data pendaftaran..."):
                 sukses, err = simpan_ke_google_sheets(
                     nama_lengkap, email, no_wa, universitas, status_mhs, program_pilihan, catatan, ktm_file
                 )
@@ -164,13 +150,13 @@ with st.container(border=True):
                     f"• *Status:* {status_mhs}\n"
                     f"• *Program:* {program_pilihan}\n"
                     f"• *Catatan:* {catatan if catatan else '-'}\n\n"
-                    f"*(Saya telah melampirkan foto bukti pembayaran)*"
+                    f"*(Saya melampirkan foto bukti pembayaran di chat ini)*"
                 )
                 
                 nomor_admin = "6282157263167" 
                 link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
 
-                st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran ke WhatsApp Admin.")
+                st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran & kirim foto bukti bayar ke WhatsApp Admin.")
                 st.link_button("📲 Konfirmasi & Kirim Data ke WhatsApp Admin", link_whatsapp, use_container_width=True)
             else:
                 st.error(f"❌ Gagal menyimpan data ke database. Error: {err}")
