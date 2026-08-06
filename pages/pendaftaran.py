@@ -44,7 +44,7 @@ with st.container(border=True):
 
         st.divider()
         st.subheader("3. Dokumen Pendukung (Opsional)")
-        ktm_file = st.file_uploader("Unggah Kartu Tanda Mahasiswa (KTM) / Identitas FK", type=["jpg", "jpeg", "png", "pdf"])
+        ktm_file = st.file_uploader("Unggah Bukti Pembayaran", type=["jpg", "jpeg", "png", "pdf"])
 
         st.markdown("<br>", unsafe_allow_html=True)
         btn_submit = st.form_submit_button("Kirim Pendaftaran", type="primary", use_container_width=True)
