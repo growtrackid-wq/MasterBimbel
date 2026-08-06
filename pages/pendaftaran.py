@@ -69,7 +69,7 @@ with st.container(border=True):
             )
             
             # GANTI NOMOR DI BAWAH INI DENGAN NOMOR ADMIN ASLI (Gunakan Kode Negara 62)
-            nomor_admin = "6281234567890" 
+            nomor_admin = "6282157263167" 
             link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
 
             st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran Anda ke WhatsApp Admin.")
