@@ -3,57 +3,27 @@ import urllib.parse
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
-from googleapiclient.discovery import build
-from googleapiclient.http import MediaIoBaseUpload
-import io
 
 st.markdown("## 📝 Formulir Pendaftaran Bimbingan")
 st.write("Lengkapi data diri Anda di bawah ini untuk memulai bimbingan di **Master Bimbel**.")
 
 # ==========================================
-# FUNGSI KONEKSI KE GOOGLE DRIVE & SHEETS
+# FUNGSI KONEKSI KE GOOGLE SHEETS
 # ==========================================
-def simpan_ke_google(nama, email_pendaftar, no_wa, univ, status, program, catatan_user, file_bukti):
+def simpan_ke_google_sheets(nama, email_pendaftar, no_wa, univ, status, program, catatan_user, file_uploaded):
     try:
-        # 1. Ambil kredensial dari st.secrets
+        # 1. Kredensial dari st.secrets
         credentials_dict = dict(st.secrets["gcp_service_account"])
-        
-        scopes = [
-            "https://www.googleapis.com/auth/spreadsheets",
-            "https://www.googleapis.com/auth/drive"
-        ]
-        
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
         creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
         
-        # 2. Upload file ke Google Drive (jika ada file yang diunggah)
-        link_bukti_drive = "-"
-        if file_bukti is not None:
-            drive_service = build('drive', 'v3', credentials=creds)
-            folder_id = st.secrets["gdrive"]["folder_id"]
-            
-            file_metadata = {
-                'name': f"{nama}_{file_bukti.name}",
-                'parents': [folder_id]
-            }
-            
-            media = MediaIoBaseUpload(
-                io.BytesIO(file_bukti.getvalue()),
-                mimetype=file_bukti.type,
-                resumable=True
-            )
-            
-            uploaded_file = drive_service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id, webViewLink'
-            ).execute()
-            
-            link_bukti_drive = uploaded_file.get('webViewLink', '-')
-
-        # 3. Simpan baris data ke Google Sheets
+        # 2. Hubungkan ke Google Sheets
         gc = gspread.authorize(creds)
         spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
-        sheet = gc.open_by_key(spreadsheet_id).sheet1  # Mengambil tab pertama
+        sheet = gc.open_by_key(spreadsheet_id).sheet1
+        
+        # 3. Keterangan Bukti Pembayaran
+        info_bukti = "Lampiran di WA" if file_uploaded is not None else "Tidak Ada"
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         row_data = [
@@ -65,11 +35,11 @@ def simpan_ke_google(nama, email_pendaftar, no_wa, univ, status, program, catata
             status,
             program,
             catatan_user if catatan_user else "-",
-            link_bukti_drive
+            info_bukti
         ]
         
         sheet.append_row(row_data)
-        return True, link_bukti_drive
+        return True, None
 
     except Exception as e:
         return False, str(e)
@@ -126,7 +96,7 @@ with st.container(border=True):
             st.error("⚠️ Mohon lengkapi seluruh kolom bertanda bintang (*) sebelum melanjutkan.")
         else:
             with st.spinner("Sedang menyimpan data pendaftaran..."):
-                sukses, hasil = simpan_ke_google(
+                sukses, err = simpan_ke_google_sheets(
                     nama_lengkap, email, no_wa, universitas, status_mhs, program_pilihan, catatan, ktm_file
                 )
             
@@ -143,16 +113,17 @@ with st.container(border=True):
                     f"• *Universitas:* {universitas}\n"
                     f"• *Status:* {status_mhs}\n"
                     f"• *Program:* {program_pilihan}\n"
-                    f"• *Catatan:* {catatan if catatan else '-'}\n"
+                    f"• *Catatan:* {catatan if catatan else '-'}\n\n"
+                    f"*(Saya melampirkan foto bukti pembayaran di chat ini)*"
                 )
                 
                 nomor_admin = "6282157263167" 
                 link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
 
-                st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran Anda ke WhatsApp Admin.")
+                st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran & kirim foto bukti bayar ke WhatsApp Admin.")
                 st.link_button("📲 Konfirmasi & Kirim Data ke WhatsApp Admin", link_whatsapp, use_container_width=True)
             else:
-                st.error(f"❌ Gagal menyimpan data ke database. Error: {hasil}")
+                st.error(f"❌ Gagal menyimpan data ke database. Error: {err}")
 
 # Tombol Kembali ke Dashboard
 st.markdown("<br>", unsafe_allow_html=True)
