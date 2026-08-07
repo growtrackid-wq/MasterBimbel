@@ -58,25 +58,17 @@ def form_login():
                     st.error("❌ Email tidak ditemukan. Silakan tekan tombol 'Daftar' terlebih dahulu untuk melakukan pendaftaran.")
 
 # ==========================================
-# 4. HEADER UTAMA & TOMBOL MASUK/DAFTAR (POJOK KANAN ATAS)
+# 4. HEADER UTAMA & STATUS LOGIN
 # ==========================================
-col_header, col_auth = st.columns([3, 1.2])
+st.title("📚 Pusat Pembelajaran Masterbimbel")
+st.write("Silakan pilih menu materi kuliah atau langsung uji kemampuanmu di menu Tryout.")
 
-with col_header:
-    st.title("📚 Pusat Pembelajaran Masterbimbel")
-    st.write("Silakan pilih menu materi kuliah atau langsung uji kemampuanmu di menu Tryout.")
-
-with col_auth:
-    if not st.session_state["is_logged_in"]:
-        col_btn1, col_btn2 = st.columns(2)
-        with col_btn1:
-            if st.button("Masuk", type="secondary", use_container_width=True):
-                form_login()
-        with col_btn2:
-            if st.button("Daftar", type="primary", use_container_width=True):
-                st.switch_page("pages/pendaftaran.py")  # Sesuaikan dengan path file pendaftaran Anda
-    else:
-        st.success(f"👤 **{st.session_state['user_email']}**")
+# Jika sudah login, tampilkan info akun & tombol logout
+if st.session_state["is_logged_in"]:
+    col_user, col_logout = st.columns([3, 1])
+    with col_user:
+        st.success(f"👤 **Login sebagai:** {st.session_state['user_email']}")
+    with col_logout:
         if st.button("Keluar (Logout)", type="secondary", use_container_width=True):
             st.session_state["is_logged_in"] = False
             st.session_state["user_email"] = ""
