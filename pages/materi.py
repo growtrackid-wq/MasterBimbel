@@ -37,7 +37,7 @@ def cek_email_terdaftar(email_input):
         return False
 
 # ==========================================
-# 3. POP-UP DIALOG UNTUK MASUK (LOGIN)
+# 3. POP-UP DIALOG UNTUK FORM LOGIN (MODAL)
 # ==========================================
 @st.dialog("🔑 Masuk Member Masterbimbel")
 def form_login():
@@ -52,23 +52,30 @@ def form_login():
                 if cek_email_terdaftar(email_input):
                     st.session_state["is_logged_in"] = True
                     st.session_state["user_email"] = email_input.strip().lower()
-                    st.success("✅ Email terverifikasi! Akses materi dan tryout berhasil dibuka.")
+                    st.success("✅ Email terverifikasi!")
                     st.rerun()
                 else:
-                    st.error("❌ Email tidak ditemukan. Silakan tekan tombol 'Daftar' terlebih dahulu untuk melakukan pendaftaran.")
+                    st.error("❌ Email tidak ditemukan. Pastikan Anda sudah mengisi form pendaftaran.")
 
 # ==========================================
-# 4. HEADER UTAMA & STATUS LOGIN
+# 4. HEADER UTAMA & BANNER STATUS LOGIN
 # ==========================================
 st.title("📚 Pusat Pembelajaran Masterbimbel")
 st.write("Silakan pilih menu materi kuliah atau langsung uji kemampuanmu di menu Tryout.")
 
-# Jika sudah login, tampilkan info akun & tombol logout
-if st.session_state["is_logged_in"]:
-    col_user, col_logout = st.columns([3, 1])
-    with col_user:
-        st.success(f"👤 **Login sebagai:** {st.session_state['user_email']}")
-    with col_logout:
+# Area Status Login & Tombol Pemicu Pop-up
+if not st.session_state["is_logged_in"]:
+    col_warning, col_login_btn = st.columns([3, 1])
+    with col_warning:
+        st.warning("🔒 **Akses Terkunci!** Klik tombol di samping untuk verifikasi email Anda.")
+    with col_login_btn:
+        if st.button("🔑 Masuk / Verifikasi", type="primary", use_container_width=True):
+            form_login()
+else:
+    col_status, col_logout_btn = st.columns([3, 1])
+    with col_status:
+        st.success(f"👤 **Akses Aktif:** {st.session_state['user_email']}")
+    with col_logout_btn:
         if st.button("Keluar (Logout)", type="secondary", use_container_width=True):
             st.session_state["is_logged_in"] = False
             st.session_state["user_email"] = ""
@@ -77,17 +84,13 @@ if st.session_state["is_logged_in"]:
 st.divider()
 
 # ==========================================
-# 5. PERINGATAN BILA BELUM LOGIN
+# 5. TAB UTAMA: KUMPULAN SLIDE VS TRYOUT CBT
 # ==========================================
-if not st.session_state["is_logged_in"]:
-    st.warning("🔒 **Akses Terkunci!** Silakan klik tombol **Masuk** di sudut kanan atas dan verifikasi email Anda untuk mengakses tautan Google Drive dan Tryout CBT.")
-
-# Membuat Tab Utama: Kumpulan Slide vs Tryout CBT
 tab_slide, tab_tryout = st.tabs(["📁 Kumpulan Slide Materi", "📝 Sistem Tryout CBT"])
 
-# ==========================================
+# ------------------------------------------
 # TAB 1: KUMPULAN SLIDE MATERI (GOOGLE DRIVE)
-# ==========================================
+# ------------------------------------------
 with tab_slide:
     st.subheader("Slide & Modul Pembelajaran Berdasarkan Sistem")
     st.write("Klik tombol **'📂 Buka Folder'** untuk mengakses materi di Google Drive:")
@@ -99,7 +102,6 @@ with tab_slide:
             st.markdown("### 🩺 Endokrin & Metabolisme")
             st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
             url_endokrin = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Endokrin", url_endokrin, use_container_width=True, type="primary")
             else:
@@ -110,7 +112,6 @@ with tab_slide:
             st.markdown("### 🥑 Gastroenterohepatologi")
             st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
             url_gastro = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Gastro", url_gastro, use_container_width=True, type="primary")
             else:
@@ -123,7 +124,6 @@ with tab_slide:
             st.markdown("### ❤️ Kardiologi & Vaskular")
             st.caption("Kardiovaskular, EKG, Penyakit Jantung Koroner, dan Hipertensi.")
             url_kardio = "https://drive.google.com/drive/folders/1doZFx_pEHBf6vZvqgpU7JcHmzLvW03T1?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Kardiologi", url_kardio, use_container_width=True, type="primary")
             else:
@@ -134,7 +134,6 @@ with tab_slide:
             st.markdown("### 🦟 Kedokteran Tropis (KedTrop)")
             st.caption("Infeksi Tropis, DHF, Malaria, Demam Tifoid, dan Parasitologi.")
             url_kedtrop = "https://drive.google.com/drive/folders/1IVspdEFwRoRCPx1_BYAZnN0woRDAM3WD?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder KedTrop", url_kedtrop, use_container_width=True, type="primary")
             else:
@@ -147,7 +146,6 @@ with tab_slide:
             st.markdown("### 🧠 Neuropsikiatri")
             st.caption("Neurologi (Saraf), Stroke, Kejang, serta Gangguan Psikiatri.")
             url_neuro = "https://drive.google.com/drive/folders/1yRrmN1AgK-9bHg8DPAsAqEyvzN5hDCV2?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Neuropsikiatri", url_neuro, use_container_width=True, type="primary")
             else:
@@ -158,7 +156,6 @@ with tab_slide:
             st.markdown("### 🫁 Pulmonologi & Respirasi")
             st.caption("Sistem Respirasi, Asma, PPOK, Tuberculosis (TB), dan Pneumonia.")
             url_respi = "https://drive.google.com/drive/folders/1s42ZzH7ay4rKu_YaNlj6-Ox8HjT66D3e?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Respirasi", url_respi, use_container_width=True, type="primary")
             else:
@@ -171,7 +168,6 @@ with tab_slide:
             st.markdown("### 👁️ Special Sense (Indera)")
             st.caption("Indera Mata, Telinga Hidung Tenggorokan (THT), dan Dermatologi.")
             url_sense = "https://drive.google.com/drive/folders/1MFWypf6XLL1Wz1-dqUG8058xG7_h8fk9?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Special Sense", url_sense, use_container_width=True, type="primary")
             else:
@@ -182,21 +178,20 @@ with tab_slide:
             st.markdown("### 🚽 Urologi & Ginjal")
             st.caption("Saluran Kemih, Infeksi Saluran Kemih (ISK), BPH, dan Ginjal.")
             url_uro = "https://drive.google.com/drive/folders/1sxsFjKpncecy4HcsjtmVDQGFYqZoWy8N?usp=sharing"
-            
             if st.session_state["is_logged_in"]:
                 st.link_button("📂 Buka Folder Urologi", url_uro, use_container_width=True, type="primary")
             else:
                 st.button("🔒 Buka Folder Urologi (Perlu Login)", disabled=True, use_container_width=True)
 
 
-# ==========================================
+# ------------------------------------------
 # TAB 2: SISTEM TRYOUT CBT (PROTECTED)
-# ==========================================
+# ------------------------------------------
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
     
     if not st.session_state["is_logged_in"]:
-        st.info("🔒 Fitur Tryout CBT ini dikunci. Silakan klik **Masuk** di pojok kanan atas untuk membuka ujian.")
+        st.info("🔒 Fitur Tryout CBT ini dikunci. Silakan klik **Masuk / Verifikasi** di bagian atas untuk membuka ujian.")
     else:
         st.write("Centang kotak di bawah ini untuk memulai pengerjaan soal interaktif.")
         mulai_ujian = st.checkbox("Mulai Simulasi Tryout Sekarang")
@@ -204,7 +199,6 @@ with tab_tryout:
         if mulai_ujian:
             st.divider()
 
-            # Load bank soal dari excel
             if 'data_soal' not in st.session_state:
                 try:
                     df_soal = pd.read_excel("bank_soal.xlsx")
@@ -213,7 +207,6 @@ with tab_tryout:
                     st.error(f"⚠️ Terjadi kesalahan saat membaca `bank_soal.xlsx`: {e}")
                     st.stop()
 
-            # Inisialisasi State Ujian
             if 'soal_sekarang' not in st.session_state:
                 st.session_state.soal_sekarang = 0
             if 'jawaban_user' not in st.session_state:
@@ -225,9 +218,6 @@ with tab_tryout:
             total_soal = len(df)
             idx = st.session_state.soal_sekarang
 
-            # ------------------------------------------
-            # A. HALAMAN PENGERJAAN SOAL
-            # ------------------------------------------
             if not st.session_state.ujian_selesai:
                 progress = (idx + 1) / total_soal
                 st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
@@ -283,9 +273,6 @@ with tab_tryout:
                             st.session_state.ujian_selesai = True
                             st.rerun()
 
-            # ------------------------------------------
-            # B. HALAMAN HASIL & REKAPITULASI SOAL
-            # ------------------------------------------
             else:
                 st.balloons()
                 st.subheader("📊 Hasil Simulasi Tryout CBT")
