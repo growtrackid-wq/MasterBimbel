@@ -41,7 +41,7 @@ def apply_custom_styles(image_path="background.jpg"):
             font-weight: 700 !important;
         }}
 
-        /* Memastikan Tombol Popover (Menu) & Masuk Terbaca Jelas */
+        /* Memastikan Tombol Popover (Menu) Terbaca Jelas */
         div[data-testid="stPopover"] button,
         .stButton > button:not([kind="primary"]) {{
             background-color: #ffffff !important;
@@ -80,8 +80,6 @@ testimoni_page = st.Page("pages/testimoni.py", title="Testimoni", icon="⭐")
 faq_page = st.Page("pages/faq.py", title="FAQ", icon="❓")
 kontak_page = st.Page("pages/kontak.py", title="Kontak", icon="📞")
 kebijakan_page = st.Page("pages/kebijakan.py", title="Kebijakan Privasi", icon="🛡️")
-
-# Ditambahkan untuk Cara 2 (Halaman Pendaftaran Terpisah)
 pendaftaran_page = st.Page("pages/pendaftaran.py", title="Pendaftaran", icon="📝")
 
 pg = st.navigation(
@@ -121,8 +119,8 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# 4. Tombol Menu & Auth (Di Bawah Banner / Sejajar Garis Horizontal)
-col_menu, col_space, col_auth = st.columns([2, 5, 3])
+# 4. Tombol Menu & Auth (Hanya Tombol Daftar di Sebelah Kanan)
+col_menu, col_space, col_auth = st.columns([2, 5.5, 2.5])
 
 with col_menu:
     with st.popover("☰ Menu", use_container_width=True):
@@ -140,13 +138,9 @@ with col_menu:
             st.switch_page("pages/kebijakan.py")
 
 with col_auth:
-    col_masuk, col_daftar = st.columns(2)
-    with col_masuk:
-        st.button("Masuk", use_container_width=True)
-    with col_daftar:
-        # Tombol ini mengarahkan mahasiswa ke halaman pages/pendaftaran.py
-        if st.button("Daftar", type="primary", use_container_width=True):
-            st.switch_page("pages/pendaftaran.py")
+    # Hanya tombol Daftar
+    if st.button("Daftar", type="primary", use_container_width=True):
+        st.switch_page("pages/pendaftaran.py")
 
 st.divider()
 
