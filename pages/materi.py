@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components  # Ditambahkan untuk komponen HTML/JS
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -40,7 +41,6 @@ def cek_email_terdaftar(email_input):
 
 # ==========================================
 # 2B. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
-# (Disesuaikan menerima 6 parameter hingga total_soal)
 # ==========================================
 def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
     try:
@@ -145,7 +145,7 @@ with tab_slide:
                 st.button("🔒 Buka Folder Gastro (Perlu Login)", disabled=True, use_container_width=True)
 
 # ------------------------------------------
-# TAB 2: SISTEM TRYOUT CBT (PROTECTED + TIMER)
+# TAB 2: SISTEM TRYOUT CBT (LIVE TICKING TIMER)
 # ------------------------------------------
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -177,14 +177,14 @@ with tab_tryout:
                 st.session_state.ujian_selesai = False
 
             # ==========================================
-            # LOGIKA TIMER (PENGHITUNG WAKTU MUNDUR)
+            # LOGIKA TIMER (TARGET WAKTU SELESAI)
             # ==========================================
-            DURASI_MENIT = 15  # Atur durasi ujian dalam menit di sini
+            DURASI_MENIT = 15  # Ubah durasi ujian dalam menit di sini
 
             if 'waktu_selesai' not in st.session_state:
                 st.session_state.waktu_selesai = time.time() + (DURASI_MENIT * 60)
 
-            sisa_detik = int(st.session_state.waktu_selesai - time.time())
+            sisa_detik = max(0, int(st.session_state.waktu_selesai - time.time()))
 
             if sisa_detik <= 0 and not st.session_state.ujian_selesai:
                 st.session_state.ujian_selesai = True
@@ -196,16 +196,45 @@ with tab_tryout:
 
             # --- TAMPILAN JIKA UJIAN MASIH BERLANGSUNG ---
             if not st.session_state.ujian_selesai:
-                col_timer, col_prog = st.columns([1, 3])
+                col_timer, col_prog = st.columns([1.2, 2.8])
                 
                 with col_timer:
-                    menit, detik = divmod(sisa_detik, 60)
-                    waktu_format = f"{menit:02d}:{detik:02d}"
-                    
-                    if sisa_detik < 120:
-                        st.error(f"⏳ **Sisa Waktu:** {waktu_format}")
-                    else:
-                        st.warning(f"⏳ **Sisa Waktu:** {waktu_format}")
+                    # Kode HTML & JS untuk Timer Berjalan Real-time
+                    timer_code = f"""
+                    <div style="
+                        font-family: Arial, sans-serif;
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #d9534f;
+                        background-color: #fdf2f2;
+                        border: 1.5px solid #d9534f;
+                        padding: 8px 12px;
+                        border-radius: 8px;
+                        text-align: center;
+                    ">
+                        ⏳ Sisa Waktu: <span id="countdown">{divmod(sisa_detik, 60)[0]:02d}:{divmod(sisa_detik, 60)[1]:02d}</span>
+                    </div>
+
+                    <script>
+                        var timeleft = {sisa_detik};
+                        var downloadTimer = setInterval(function(){{
+                            if(timeleft <= 0){{
+                                clearInterval(downloadTimer);
+                                document.getElementById("countdown").innerHTML = "00:00";
+                                // Otomatis refresh halaman Streamlit saat waktu habis
+                                window.parent.postMessage({{type: 'streamlit:rerun'}}, '*');
+                            }} else {{
+                                var minutes = Math.floor(timeleft / 60);
+                                var seconds = timeleft % 60;
+                                minutes = minutes < 10 ? "0" + minutes : minutes;
+                                seconds = seconds < 10 ? "0" + seconds : seconds;
+                                document.getElementById("countdown").innerHTML = minutes + ":" + seconds;
+                            }}
+                            timeleft -= 1;
+                        }}, 1000);
+                    </script>
+                    """
+                    components.html(timer_code, height=60)
 
                 with col_prog:
                     progress = (idx + 1) / total_soal
