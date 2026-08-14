@@ -126,7 +126,7 @@ with tab_slide:
     col1, col2 = st.columns(2)
     with col1:
         with st.container(border=True):
-            st.markdown("### 🩺 Endokrin & Metabolisme")
+            st.markdown("### 🩺 SLIDE MATERI")
             st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
             url_endokrin = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
             if st.session_state["is_logged_in"]:
@@ -136,7 +136,7 @@ with tab_slide:
 
     with col2:
         with st.container(border=True):
-            st.markdown("### 🥑 Gastroenterohepatologi")
+            st.markdown("### 🥑 CORETAN")
             st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
             url_gastro = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
             if st.session_state["is_logged_in"]:
