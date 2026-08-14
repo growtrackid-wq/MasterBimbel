@@ -179,7 +179,7 @@ with tab_tryout:
             # ==========================================
             # LOGIKA TIMER (TARGET WAKTU SELESAI)
             # ==========================================
-            DURASI_MENIT = 15  # Ubah durasi ujian dalam menit di sini
+            DURASI_MENIT = 150  # Ubah durasi ujian dalam menit di sini
 
             if 'waktu_selesai' not in st.session_state:
                 st.session_state.waktu_selesai = time.time() + (DURASI_MENIT * 60)
