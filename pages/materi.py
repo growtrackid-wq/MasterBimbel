@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
+from datetime import datetime  # Ditambahkan untuk mencatat waktu pengerjaan
 
 # Set Konfigurasi Halaman Wide
 st.set_page_config(page_title="Pusat Pembelajaran - Masterbimbel", layout="wide")
@@ -34,6 +35,34 @@ def cek_email_terdaftar(email_input):
         return email_input.strip().lower() in list_email_clean
     except Exception as e:
         st.error(f"Gagal menghubungkan ke database: {e}")
+        return False
+
+# ==========================================
+# 2B. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET (BARU)
+# ==========================================
+def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong):
+    try:
+        credentials_dict = dict(st.secrets["gcp_service_account"])
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
+        
+        gc = gspread.authorize(creds)
+        spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
+        
+        # Mengakses sheet. Ubah "NilaiTryout" sesuai nama tab di Google Sheets Anda.
+        # Jika hanya ada 1 tab/sheet, bisa gunakan: sheet = gc.open_by_key(spreadsheet_id).sheet1
+        try:
+            sheet = gc.open_by_key(spreadsheet_id).worksheet("NilaiTryout")
+        except Exception:
+            sheet = gc.open_by_key(spreadsheet_id).sheet1
+
+        waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        baris_baru = [waktu_sekarang, email, skor, benar, salah, kosong]
+        
+        sheet.append_row(baris_baru)
+        return True
+    except Exception as e:
+        st.error(f"⚠️ Gagal menyimpan nilai ke database: {e}")
         return False
 
 # ==========================================
@@ -294,6 +323,25 @@ with tab_tryout:
 
                 skor_persen = round((benar / total_soal) * 100, 1)
 
+                # ==========================================
+                # PROSES PENYIMPANAN OTOMATIS KE GOOGLE SHEET
+                # ==========================================
+                if "nilai_tersimpan" not in st.session_state:
+                    st.session_state["nilai_tersimpan"] = False
+
+                if not st.session_state["nilai_tersimpan"]:
+                    with st.spinner("Menyimpan hasil ujian Anda ke database..."):
+                        if simpan_nilai_ke_sheet(
+                            st.session_state["user_email"],
+                            skor_persen,
+                            benar,
+                            salah,
+                            tidak_dijawab
+                        ):
+                            st.session_state["nilai_tersimpan"] = True
+                            st.toast("✅ Nilai berhasil tersimpan di Google Sheet!", icon="🎉")
+
+                # Tampilan Metric Nilai
                 col_res1, col_res2, col_res3, col_res4 = st.columns(4)
                 col_res1.metric("Skor Akhir", f"{skor_persen}%")
                 col_res2.metric("Jawaban Benar ✅", f"{benar} Soal")
@@ -320,8 +368,10 @@ with tab_tryout:
 
                 st.divider()
                 
+                # Tombol Reset Ujian
                 if st.button("🔄 Ulang Simulasi Ujian", type="primary"):
                     st.session_state.soal_sekarang = 0
                     st.session_state.jawaban_user = {}
                     st.session_state.ujian_selesai = False
+                    st.session_state["nilai_tersimpan"] = False  # Reset flag simpan nilai
                     st.rerun()
