@@ -1,9 +1,9 @@
+import time
 from datetime import datetime
-import streamlit as st
 import pandas as pd
+import Streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
-from datetime import datetime  # Ditambahkan untuk mencatat waktu pengerjaan
 
 # Set Konfigurasi Halaman Wide
 st.set_page_config(page_title="Pusat Pembelajaran - Masterbimbel", layout="wide")
@@ -39,9 +39,10 @@ def cek_email_terdaftar(email_input):
         return False
 
 # ==========================================
-# 2B. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET (BARU)
+# 2B. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
+# (Disesuaikan menerima 6 parameter hingga total_soal)
 # ==========================================
-def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong):
+def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
     try:
         credentials_dict = dict(st.secrets["gcp_service_account"])
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -50,15 +51,13 @@ def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong):
         gc = gspread.authorize(creds)
         spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
         
-        # Mengakses sheet. Ubah "NilaiTryout" sesuai nama tab di Google Sheets Anda.
-        # Jika hanya ada 1 tab/sheet, bisa gunakan: sheet = gc.open_by_key(spreadsheet_id).sheet1
         try:
             sheet = gc.open_by_key(spreadsheet_id).worksheet("NilaiTryout")
         except Exception:
             sheet = gc.open_by_key(spreadsheet_id).sheet1
 
         waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        baris_baru = [waktu_sekarang, email, skor, benar, salah, kosong]
+        baris_baru = [waktu_sekarang, email, skor, benar, salah, kosong, total_soal]
         
         sheet.append_row(baris_baru)
         return True
@@ -93,7 +92,6 @@ def form_login():
 st.title("📚 Pusat Pembelajaran Masterbimbel")
 st.write("Silakan pilih menu materi kuliah atau langsung uji kemampuanmu di menu Tryout.")
 
-# Area Status Login & Tombol Pemicu Pop-up
 if not st.session_state["is_logged_in"]:
     col_warning, col_login_btn = st.columns([3, 1])
     with col_warning:
@@ -112,6 +110,39 @@ else:
             st.rerun()
 
 st.divider()
+
+# ==========================================
+# 5. INISIALISASI TAB UTAMA
+# ==========================================
+tab_slide, tab_tryout = st.tabs(["📁 Kumpulan Slide Materi", "📝 Sistem Tryout CBT"])
+
+# ------------------------------------------
+# TAB 1: KUMPULAN SLIDE MATERI
+# ------------------------------------------
+with tab_slide:
+    st.subheader("Slide & Modul Pembelajaran Berdasarkan Sistem")
+    st.write("Klik tombol **'📂 Buka Folder'** untuk mengakses materi di Google Drive:")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        with st.container(border=True):
+            st.markdown("### 🩺 Endokrin & Metabolisme")
+            st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
+            url_endokrin = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
+            if st.session_state["is_logged_in"]:
+                st.link_button("📂 Buka Folder Endokrin", url_endokrin, use_container_width=True, type="primary")
+            else:
+                st.button("🔒 Buka Folder Endokrin (Perlu Login)", disabled=True, use_container_width=True)
+
+    with col2:
+        with st.container(border=True):
+            st.markdown("### 🥑 Gastroenterohepatologi")
+            st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
+            url_gastro = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
+            if st.session_state["is_logged_in"]:
+                st.link_button("📂 Buka Folder Gastro", url_gastro, use_container_width=True, type="primary")
+            else:
+                st.button("🔒 Buka Folder Gastro (Perlu Login)", disabled=True, use_container_width=True)
 
 # ------------------------------------------
 # TAB 2: SISTEM TRYOUT CBT (PROTECTED + TIMER)
@@ -148,16 +179,13 @@ with tab_tryout:
             # ==========================================
             # LOGIKA TIMER (PENGHITUNG WAKTU MUNDUR)
             # ==========================================
-            DURASI_MENIT = 15  # Ubah durasi ujian dalam menit di sini
+            DURASI_MENIT = 15  # Atur durasi ujian dalam menit di sini
 
             if 'waktu_selesai' not in st.session_state:
-                # Set target waktu selesai (Waktu saat ini + durasi detik)
                 st.session_state.waktu_selesai = time.time() + (DURASI_MENIT * 60)
 
-            # Hitung sisa waktu dalam detik
             sisa_detik = int(st.session_state.waktu_selesai - time.time())
 
-            # Cek jika waktu sudah habis
             if sisa_detik <= 0 and not st.session_state.ujian_selesai:
                 st.session_state.ujian_selesai = True
                 st.warning("⏰ **Waktu Ujian telah habis!** Jawaban Anda otomatis dikumpulkan.")
@@ -168,14 +196,12 @@ with tab_tryout:
 
             # --- TAMPILAN JIKA UJIAN MASIH BERLANGSUNG ---
             if not st.session_state.ujian_selesai:
-                # Menampilkan Timer & Progress Bar secara sejajar
                 col_timer, col_prog = st.columns([1, 3])
                 
                 with col_timer:
                     menit, detik = divmod(sisa_detik, 60)
                     waktu_format = f"{menit:02d}:{detik:02d}"
                     
-                    # Beri warna merah jika waktu kurang dari 2 menit
                     if sisa_detik < 120:
                         st.error(f"⏳ **Sisa Waktu:** {waktu_format}")
                     else:
@@ -275,7 +301,6 @@ with tab_tryout:
                             st.session_state["nilai_tersimpan"] = True
                             st.toast("✅ Nilai berhasil tersimpan di Google Sheet!", icon="🎉")
 
-                # Metric Nilai
                 col_res1, col_res2, col_res3, col_res4 = st.columns(4)
                 col_res1.metric("Skor Akhir", f"{skor_persen}%")
                 col_res2.metric("Jawaban Benar ✅", f"{benar} Soal")
@@ -309,7 +334,6 @@ with tab_tryout:
                     st.session_state.ujian_selesai = False
                     st.session_state["nilai_tersimpan"] = False
                     
-                    # Hapus variabel waktu agar timer dihitung ulang dari awal
                     if 'waktu_selesai' in st.session_state:
                         del st.session_state['waktu_selesai']
                         
