@@ -113,109 +113,8 @@ else:
 
 st.divider()
 
-# ==========================================
-# 5. TAB UTAMA: KUMPULAN SLIDE VS TRYOUT CBT
-# ==========================================
-tab_slide, tab_tryout = st.tabs(["📁 Kumpulan Slide Materi", "📝 Sistem Tryout CBT"])
-
 # ------------------------------------------
-# TAB 1: KUMPULAN SLIDE MATERI (GOOGLE DRIVE)
-# ------------------------------------------
-with tab_slide:
-    st.subheader("Slide & Modul Pembelajaran Berdasarkan Sistem")
-    st.write("Klik tombol **'📂 Buka Folder'** untuk mengakses materi di Google Drive:")
-
-    # Baris 1
-    col1, col2 = st.columns(2)
-    with col1:
-        with st.container(border=True):
-            st.markdown("### 🩺 Endokrin & Metabolisme")
-            st.caption("Diabetes Melitus, Tiroid, Adrenal, dan Gangguan Metabolik.")
-            url_endokrin = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Endokrin", url_endokrin, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Endokrin (Perlu Login)", disabled=True, use_container_width=True)
-
-    with col2:
-        with st.container(border=True):
-            st.markdown("### 🥑 Gastroenterohepatologi")
-            st.caption("Sistem Pencernaan, Hati, Saluran Empedu, dan Gastrointestinal.")
-            url_gastro = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Gastro", url_gastro, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Gastro (Perlu Login)", disabled=True, use_container_width=True)
-
-    # Baris 2
-    col3, col4 = st.columns(2)
-    with col3:
-        with st.container(border=True):
-            st.markdown("### ❤️ Kardiologi & Vaskular")
-            st.caption("Kardiovaskular, EKG, Penyakit Jantung Koroner, dan Hipertensi.")
-            url_kardio = "https://drive.google.com/drive/folders/1doZFx_pEHBf6vZvqgpU7JcHmzLvW03T1?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Kardiologi", url_kardio, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Kardiologi (Perlu Login)", disabled=True, use_container_width=True)
-
-    with col4:
-        with st.container(border=True):
-            st.markdown("### 🦟 Kedokteran Tropis (KedTrop)")
-            st.caption("Infeksi Tropis, DHF, Malaria, Demam Tifoid, dan Parasitologi.")
-            url_kedtrop = "https://drive.google.com/drive/folders/1IVspdEFwRoRCPx1_BYAZnN0woRDAM3WD?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder KedTrop", url_kedtrop, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder KedTrop (Perlu Login)", disabled=True, use_container_width=True)
-
-    # Baris 3
-    col5, col6 = st.columns(2)
-    with col5:
-        with st.container(border=True):
-            st.markdown("### 🧠 Neuropsikiatri")
-            st.caption("Neurologi (Saraf), Stroke, Kejang, serta Gangguan Psikiatri.")
-            url_neuro = "https://drive.google.com/drive/folders/1yRrmN1AgK-9bHg8DPAsAqEyvzN5hDCV2?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Neuropsikiatri", url_neuro, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Neuropsikiatri (Perlu Login)", disabled=True, use_container_width=True)
-
-    with col6:
-        with st.container(border=True):
-            st.markdown("### 🫁 Pulmonologi & Respirasi")
-            st.caption("Sistem Respirasi, Asma, PPOK, Tuberculosis (TB), dan Pneumonia.")
-            url_respi = "https://drive.google.com/drive/folders/1s42ZzH7ay4rKu_YaNlj6-Ox8HjT66D3e?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Respirasi", url_respi, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Respirasi (Perlu Login)", disabled=True, use_container_width=True)
-
-    # Baris 4
-    col7, col8 = st.columns(2)
-    with col7:
-        with st.container(border=True):
-            st.markdown("### 👁️ Special Sense (Indera)")
-            st.caption("Indera Mata, Telinga Hidung Tenggorokan (THT), dan Dermatologi.")
-            url_sense = "https://drive.google.com/drive/folders/1MFWypf6XLL1Wz1-dqUG8058xG7_h8fk9?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Special Sense", url_sense, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Special Sense (Perlu Login)", disabled=True, use_container_width=True)
-
-    with col8:
-        with st.container(border=True):
-            st.markdown("### 🚽 Urologi & Ginjal")
-            st.caption("Saluran Kemih, Infeksi Saluran Kemih (ISK), BPH, dan Ginjal.")
-            url_uro = "https://drive.google.com/drive/folders/1sxsFjKpncecy4HcsjtmVDQGFYqZoWy8N?usp=sharing"
-            if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Urologi", url_uro, use_container_width=True, type="primary")
-            else:
-                st.button("🔒 Buka Folder Urologi (Perlu Login)", disabled=True, use_container_width=True)
-
-
-# ------------------------------------------
-# TAB 2: SISTEM TRYOUT CBT (PROTECTED)
+# TAB 2: SISTEM TRYOUT CBT (PROTECTED + TIMER)
 # ------------------------------------------
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -229,6 +128,7 @@ with tab_tryout:
         if mulai_ujian:
             st.divider()
 
+            # --- DIBUATKAN BANK SOAL ---
             if 'data_soal' not in st.session_state:
                 try:
                     df_soal = pd.read_excel("bank_soal.xlsx")
@@ -237,6 +137,7 @@ with tab_tryout:
                     st.error(f"⚠️ Terjadi kesalahan saat membaca `bank_soal.xlsx`: {e}")
                     st.stop()
 
+            # --- INISIALISASI SESSION STATE UJIAN ---
             if 'soal_sekarang' not in st.session_state:
                 st.session_state.soal_sekarang = 0
             if 'jawaban_user' not in st.session_state:
@@ -244,13 +145,45 @@ with tab_tryout:
             if 'ujian_selesai' not in st.session_state:
                 st.session_state.ujian_selesai = False
 
+            # ==========================================
+            # LOGIKA TIMER (PENGHITUNG WAKTU MUNDUR)
+            # ==========================================
+            DURASI_MENIT = 15  # Ubah durasi ujian dalam menit di sini
+
+            if 'waktu_selesai' not in st.session_state:
+                # Set target waktu selesai (Waktu saat ini + durasi detik)
+                st.session_state.waktu_selesai = time.time() + (DURASI_MENIT * 60)
+
+            # Hitung sisa waktu dalam detik
+            sisa_detik = int(st.session_state.waktu_selesai - time.time())
+
+            # Cek jika waktu sudah habis
+            if sisa_detik <= 0 and not st.session_state.ujian_selesai:
+                st.session_state.ujian_selesai = True
+                st.warning("⏰ **Waktu Ujian telah habis!** Jawaban Anda otomatis dikumpulkan.")
+
             df = st.session_state.data_soal
             total_soal = len(df)
             idx = st.session_state.soal_sekarang
 
+            # --- TAMPILAN JIKA UJIAN MASIH BERLANGSUNG ---
             if not st.session_state.ujian_selesai:
-                progress = (idx + 1) / total_soal
-                st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
+                # Menampilkan Timer & Progress Bar secara sejajar
+                col_timer, col_prog = st.columns([1, 3])
+                
+                with col_timer:
+                    menit, detik = divmod(sisa_detik, 60)
+                    waktu_format = f"{menit:02d}:{detik:02d}"
+                    
+                    # Beri warna merah jika waktu kurang dari 2 menit
+                    if sisa_detik < 120:
+                        st.error(f"⏳ **Sisa Waktu:** {waktu_format}")
+                    else:
+                        st.warning(f"⏳ **Sisa Waktu:** {waktu_format}")
+
+                with col_prog:
+                    progress = (idx + 1) / total_soal
+                    st.progress(progress, text=f"Soal No. {idx + 1} dari {total_soal}")
 
                 st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
                 st.markdown(f"**{df.loc[idx, 'Soal']}**")
@@ -303,6 +236,7 @@ with tab_tryout:
                             st.session_state.ujian_selesai = True
                             st.rerun()
 
+            # --- TAMPILAN JIKA UJIAN SELSEAI ---
             else:
                 st.balloons()
                 st.subheader("📊 Hasil Simulasi Tryout CBT")
@@ -324,9 +258,7 @@ with tab_tryout:
 
                 skor_persen = round((benar / total_soal) * 100, 1)
 
-                # ==========================================
-                # PROSES PENYIMPANAN OTOMATIS KE GOOGLE SHEET
-                # ==========================================
+                # --- PENYIMPANAN OTOMATIS KE SHEET ---
                 if "nilai_tersimpan" not in st.session_state:
                     st.session_state["nilai_tersimpan"] = False
 
@@ -337,12 +269,13 @@ with tab_tryout:
                             skor_persen,
                             benar,
                             salah,
-                            tidak_dijawab
+                            tidak_dijawab,
+                            total_soal
                         ):
                             st.session_state["nilai_tersimpan"] = True
                             st.toast("✅ Nilai berhasil tersimpan di Google Sheet!", icon="🎉")
 
-                # Tampilan Metric Nilai
+                # Metric Nilai
                 col_res1, col_res2, col_res3, col_res4 = st.columns(4)
                 col_res1.metric("Skor Akhir", f"{skor_persen}%")
                 col_res2.metric("Jawaban Benar ✅", f"{benar} Soal")
@@ -369,10 +302,15 @@ with tab_tryout:
 
                 st.divider()
                 
-                # Tombol Reset Ujian
+                # --- TOMBOL RESET UJIAN & TIMER ---
                 if st.button("🔄 Ulang Simulasi Ujian", type="primary"):
                     st.session_state.soal_sekarang = 0
                     st.session_state.jawaban_user = {}
                     st.session_state.ujian_selesai = False
-                    st.session_state["nilai_tersimpan"] = False  # Reset flag simpan nilai
+                    st.session_state["nilai_tersimpan"] = False
+                    
+                    # Hapus variabel waktu agar timer dihitung ulang dari awal
+                    if 'waktu_selesai' in st.session_state:
+                        del st.session_state['waktu_selesai']
+                        
                     st.rerun()
