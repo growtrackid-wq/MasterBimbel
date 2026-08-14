@@ -128,21 +128,23 @@ with tab_slide:
         with st.container(border=True):
             st.markdown("### 🩺 SLIDE MATERI")
             st.caption("Semua Slide Materi yang telah dibahas.")
-            url_endokrin = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
+            url_slide = "https://drive.google.com/drive/folders/1PlPLzWMb4LHTJtM36ZvUn_I8dr2Aty8Z?usp=sharing"
+            
             if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder", url_slide, use_container_width=True, type="primary")
+                st.link_button("📂 Buka Folder Slide", url_slide, use_container_width=True, type="primary")
             else:
-                st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True)
+                st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True, key="btn_slide_locked")
 
     with col2:
         with st.container(border=True):
-            st.markdown("### CORETAN")
+            st.markdown("### 📝 CORETAN")
             st.caption("Coretan tangan para tutor.")
-            url_gastro = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
+            url_coretan = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
+            
             if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder", url_coretan, use_container_width=True, type="primary")
+                st.link_button("📂 Buka Folder Coretan", url_coretan, use_container_width=True, type="primary")
             else:
-                st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True)
+                st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True, key="btn_coretan_locked")
 
 # ------------------------------------------
 # TAB 2: SISTEM TRYOUT CBT (LIVE TICKING TIMER)
