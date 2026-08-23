@@ -4,6 +4,12 @@ import streamlit as st
 # 1. Konfigurasi Dasar
 st.set_page_config(page_title="Masterbimbel - Dashboard", page_icon="🩺", layout="wide")
 
+# Inisialisasi Session State Login secara Global
+if "is_logged_in" not in st.session_state:
+    st.session_state["is_logged_in"] = False
+if "user_email" not in st.session_state:
+    st.session_state["user_email"] = ""
+
 # Fungsi penanganan background & styling CSS global
 def apply_custom_styles(image_path="background.jpg"):
     bg_style = ""
@@ -119,28 +125,28 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 
-# 4. Tombol Menu & Auth (Hanya Tombol Daftar di Sebelah Kanan)
+# 4. Tombol Menu & Auth (Navigasi Menggunakan Objek Halaman)
 col_menu, col_space, col_auth = st.columns([2, 5.5, 2.5])
 
 with col_menu:
     with st.popover("☰ Menu", use_container_width=True):
         if st.button("🏢 Tentang Kami", use_container_width=True):
-            st.switch_page("pages/tentang_kami.py")
+            st.switch_page(tentang_kami_page)
         if st.button("📚 Materi", use_container_width=True):
-            st.switch_page("pages/materi.py")
+            st.switch_page(materi_page)
         if st.button("⭐ Testimoni", use_container_width=True):
-            st.switch_page("pages/testimoni.py")
+            st.switch_page(testimoni_page)
         if st.button("❓ FAQ", use_container_width=True):
-            st.switch_page("pages/faq.py")
+            st.switch_page(faq_page)
         if st.button("📞 Kontak", use_container_width=True):
-            st.switch_page("pages/kontak.py")
+            st.switch_page(kontak_page)
         if st.button("🛡️ Kebijakan Privasi", use_container_width=True):
-            st.switch_page("pages/kebijakan.py")
+            st.switch_page(kebijakan_page)
 
 with col_auth:
     # Hanya tombol Daftar
     if st.button("Daftar", type="primary", use_container_width=True):
-        st.switch_page("pages/pendaftaran.py")
+        st.switch_page(pendaftaran_page)
 
 st.divider()
 
