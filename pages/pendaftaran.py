@@ -153,7 +153,7 @@ with st.container(border=True):
                     f"*(Saya melampirkan foto bukti pembayaran di chat ini)*"
                 )
                 
-                nomor_admin = "6282157263167" 
+                nomor_admin = "6282190312466" 
                 link_whatsapp = f"https://wa.me/{nomor_admin}?text={urllib.parse.quote(pesan_wa)}"
 
                 st.info("Langkah terakhir: Klik tombol di bawah ini untuk mengonfirmasi pendaftaran & kirim foto bukti bayar ke WhatsApp Admin.")
