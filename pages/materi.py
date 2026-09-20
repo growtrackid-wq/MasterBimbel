@@ -137,7 +137,7 @@ with tab_slide:
 
     with col2:
         with st.container(border=True):
-            st.markdown("### 📝 CORETAN")
+            st.markdown("### 📝 Video")
             st.caption("Video Penjelasan Tutor")
             url_coretan = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
             
