@@ -142,7 +142,7 @@ with tab_slide:
             url_coretan = "https://drive.google.com/drive/folders/1wxjrjykHwZ-ZhF6SHj5MiRpQ5MAjFJKi?usp=sharing"
             
             if st.session_state["is_logged_in"]:
-                st.link_button("📂 Buka Folder Coretan", url_coretan, use_container_width=True, type="primary")
+                st.link_button("📂 Buka Video Penjelasan", url_coretan, use_container_width=True, type="primary")
             else:
                 st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True, key="btn_coretan_locked")
 
