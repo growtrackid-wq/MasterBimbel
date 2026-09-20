@@ -118,7 +118,7 @@ with st.container(border=True):
             ]
         )
 
-        catatan = st.text_area("Catatan Khusus / Target Belajar", placeholder="Tuliskan mata kuliah atau stase yang ingin difokuskan...")
+        catatan = st.text_area("Blok apa?", placeholder="Tuliskan Blok atau stase yang ingin difokuskan...")
 
         st.divider()
         st.subheader("3. Dokumen Pendukung (Opsional)")
