@@ -2,7 +2,7 @@ import time
 from datetime import datetime
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components  # Ditambahkan untuk komponen HTML/JS
+import streamlit.components.v1 as components  # Komponen HTML/JS untuk Timer
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -181,7 +181,7 @@ with tab_tryout:
             # ==========================================
             # LOGIKA TIMER (TARGET WAKTU SELESAI)
             # ==========================================
-            DURASI_MENIT = 150  # Ubah durasi ujian dalam menit di sini
+            DURASI_MENIT = 150  # Durasi ujian dalam menit
 
             if 'waktu_selesai' not in st.session_state:
                 st.session_state.waktu_selesai = time.time() + (DURASI_MENIT * 60)
@@ -245,6 +245,21 @@ with tab_tryout:
                 st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
                 st.markdown(f"**{df.loc[idx, 'Soal']}**")
 
+                # ==========================================
+                # PENGECEKAN & MENAMPILKAN GAMBAR SOAL
+                # ==========================================
+                if 'gambar' in df.columns and pd.notna(df.loc[idx, 'gambar']) and str(df.loc[idx, 'gambar']).strip() != "":
+                    nama_file_gambar = str(df.loc[idx, 'gambar']).strip()
+                    
+                    if not nama_file_gambar.startswith("http"):
+                        # Otomatis menarik gambar dari folder 'Images' di GitHub
+                        url_gambar = f"https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/Images/{nama_file_gambar}"
+                    else:
+                        url_gambar = nama_file_gambar
+                        
+                    st.image(url_gambar, width=350, caption=f"Gambar Soal No. {df.loc[idx, 'No']}")
+
+                # Menyiapkan Opsi Jawaban (Mendukung A, B, C, D, E)
                 opsi = [
                     f"A. {df.loc[idx, 'A']}", 
                     f"B. {df.loc[idx, 'B']}", 
@@ -293,7 +308,7 @@ with tab_tryout:
                             st.session_state.ujian_selesai = True
                             st.rerun()
 
-            # --- TAMPILAN JIKA UJIAN SELSEAI ---
+            # --- TAMPILAN JIKA UJIAN SELESAI ---
             else:
                 st.balloons()
                 st.subheader("📊 Hasil Simulasi Tryout CBT")
@@ -350,11 +365,23 @@ with tab_tryout:
 
                     with st.expander(f"Soal No. {df.loc[i, 'No']} - Status: {status_icon}"):
                         st.markdown(f"**{df.loc[i, 'Soal']}**")
+                        
+                        # Tampilkan gambar juga pada mode review jika ada
+                        if 'gambar' in df.columns and pd.notna(df.loc[i, 'gambar']) and str(df.loc[i, 'gambar']).strip() != "":
+                            nama_file_gambar = str(df.loc[i, 'gambar']).strip()
+                            if not nama_file_gambar.startswith("http"):
+                                url_gambar = f"https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/Images/{nama_file_gambar}"
+                            else:
+                                url_gambar = nama_file_gambar
+                            st.image(url_gambar, width=300)
+
                         st.write(f"- **Jawaban Kamu:** `{jawaban_user}`")
                         st.write(f"- **Jawaban Benar:** `{jawaban_benar}`")
 
-                        if 'Pembahasan' in df.columns and pd.notna(df.loc[i, 'Pembahasan']):
-                            st.info(f"**Pembahasan:**\n\n{df.loc[i, 'Pembahasan']}")
+                        # Mendukung penulisan header kolom 'pembahasan' atau 'Pembahasan'
+                        kolom_pembahasan = 'pembahasan' if 'pembahasan' in df.columns else ('Pembahasan' if 'Pembahasan' in df.columns else None)
+                        if kolom_pembahasan and pd.notna(df.loc[i, kolom_pembahasan]):
+                            st.info(f"**Pembahasan:**\n\n{df.loc[i, kolom_pembahasan]}")
 
                 st.divider()
                 
