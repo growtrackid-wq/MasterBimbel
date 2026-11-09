@@ -3,7 +3,7 @@ from datetime import datetime
 import uuid
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components  # Komponen HTML/JS untuk Timer
+import streamlit.components.v1 as components  # Komponen HTML/JS untuk Timer & Auto-Refresh
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -43,7 +43,7 @@ def cek_email_terdaftar(email_input):
         return False
 
 def simpan_atau_update_sesi(email, token):
-    """Menyimpan atau memperbarui token sesi aktif di Google Sheet"""
+    """Menyimpan atau memperbarui token sesi aktif di Google Sheet secara akurat"""
     try:
         credentials_dict = dict(st.secrets["gcp_service_account"])
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -55,24 +55,26 @@ def simpan_atau_update_sesi(email, token):
         try:
             sheet = gc.open_by_key(spreadsheet_id).worksheet("SesiAktif")
         except Exception:
-            # Jika tab SesiAktif belum ada, buat otomatis
             sheet = gc.open_by_key(spreadsheet_id).add_worksheet(title="SesiAktif", rows=100, cols=3)
             sheet.append_row(["Email", "TokenSesi", "WaktuLogin"])
 
-        records = sheet.get_all_records()
         waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        
-        row_index = None
-        for idx, row in enumerate(records, start=2): # Mulai baris 2 (setelah header)
-            if str(row.get("Email", "")).strip().lower() == email.strip().lower():
-                row_index = idx
-                break
-        
-        if row_index:
-            sheet.update_cell(row_index, 2, token)
-            sheet.update_cell(row_index, 3, waktu_sekarang)
+        clean_email = email.strip().lower()
+
+        # Cari cell berdasarkan kolom Email (Kolom 1 / A)
+        try:
+            cell = sheet.find(clean_email)
+        except Exception:
+            cell = None
+
+        if cell:
+            # Jika email sudah ada, update Token (Kolom 2 / B) dan Waktu (Kolom 3 / C)
+            sheet.update_cell(cell.row, 2, token)
+            sheet.update_cell(cell.row, 3, waktu_sekarang)
         else:
-            sheet.append_row([email, token, waktu_sekarang])
+            # Jika belum ada, tambahkan baris baru
+            sheet.append_row([clean_email, token, waktu_sekarang])
+            
         return True
     except Exception as e:
         print(f"Error sesi: {e}")
@@ -91,17 +93,23 @@ def validasi_sesi_aktif(email, current_token):
         spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
         sheet = gc.open_by_key(spreadsheet_id).worksheet("SesiAktif")
         
-        records = sheet.get_all_records()
-        for row in records:
-            if str(row.get("Email", "")).strip().lower() == email.strip().lower():
-                db_token = str(row.get("TokenSesi", "")).strip()
-                return db_token == current_token
+        clean_email = email.strip().lower()
+        try:
+            cell = sheet.find(clean_email)
+        except Exception:
+            cell = None
+
+        if cell:
+            # Ambil nilai token di sebelah kolom email (Kolom B / Kolom ke-2)
+            db_token = str(sheet.cell(cell.row, 2).value).strip()
+            return db_token == current_token.strip()
+            
         return False
     except Exception:
         return True
 
 # ==========================================
-# 3. CEK KEAKTIFAN SESI PADA SETIAP RERUN
+# 3. CEK KEAKTIFAN SESI & AUTO-REFRESH BERKALA
 # ==========================================
 if st.session_state["is_logged_in"]:
     if not validasi_sesi_aktif(st.session_state["user_email"], st.session_state["session_token"]):
@@ -110,6 +118,17 @@ if st.session_state["is_logged_in"]:
         st.session_state["session_token"] = ""
         st.error("⚠️ **Sesi Berakhir!** Akun Anda telah digunakan untuk login di perangkat atau tab browser lain.")
         st.stop()
+    else:
+        # Script otomatis me-refresh halaman tiap 6 detik agar perangkat lama 
+        # langsung sadar jika akunnya sudah dipakai login di perangkat lain
+        auto_refresh_script = """
+        <script>
+            setTimeout(function(){
+                window.parent.postMessage({type: 'streamlit:rerun'}, '*');
+            }, 6000);
+        </script>
+        """
+        components.html(auto_refresh_script, height=0)
 
 # ==========================================
 # 4. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
@@ -154,6 +173,7 @@ def form_login():
                     new_token = str(uuid.uuid4())
                     clean_email = email_input.strip().lower()
                     
+                    # Simpan/Update token sesi ke Google Sheet
                     simpan_atau_update_sesi(clean_email, new_token)
                     
                     st.session_state["is_logged_in"] = True
@@ -445,7 +465,6 @@ with tab_tryout:
                     with st.expander(f"Soal No. {df.loc[i, 'No']} - Status: {status_icon}"):
                         st.markdown(f"**{df.loc[i, 'Soal']}**")
                         
-                        # Tampilkan gambar juga pada mode review jika ada
                         kolom_gambar_rev = 'gambar' if 'gambar' in df.columns else ('Gambar' if 'Gambar' in df.columns else None)
                         if kolom_gambar_rev and pd.notna(df.loc[i, kolom_gambar_rev]) and str(df.loc[i, kolom_gambar_rev]).strip() != "":
                             nama_file_gambar = str(df.loc[i, kolom_gambar_rev]).strip()
