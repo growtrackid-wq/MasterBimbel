@@ -1,5 +1,6 @@
 import time
 from datetime import datetime
+import uuid
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components  # Komponen HTML/JS untuk Timer
@@ -10,15 +11,17 @@ from google.oauth2.service_account import Credentials
 st.set_page_config(page_title="Pusat Pembelajaran - Masterbimbel", layout="wide")
 
 # ==========================================
-# 1. INISIALISASI SESSION STATE LOGIN
+# 1. INISIALISASI SESSION STATE LOGIN & SESI
 # ==========================================
 if "is_logged_in" not in st.session_state:
     st.session_state["is_logged_in"] = False
 if "user_email" not in st.session_state:
     st.session_state["user_email"] = ""
+if "session_token" not in st.session_state:
+    st.session_state["session_token"] = ""
 
 # ==========================================
-# 2. FUNGSI CEK EMAIL TERDAFTAR DI GOOGLE SHEET
+# 2. FUNGSI DATABASE & MANAJEMEN SESI (SINGLE SESSION)
 # ==========================================
 def cek_email_terdaftar(email_input):
     try:
@@ -39,8 +42,77 @@ def cek_email_terdaftar(email_input):
         st.error(f"Gagal menghubungkan ke database: {e}")
         return False
 
+def simpan_atau_update_sesi(email, token):
+    """Menyimpan atau memperbarui token sesi aktif di Google Sheet"""
+    try:
+        credentials_dict = dict(st.secrets["gcp_service_account"])
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
+        
+        gc = gspread.authorize(creds)
+        spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
+        
+        try:
+            sheet = gc.open_by_key(spreadsheet_id).worksheet("SesiAktif")
+        except Exception:
+            # Jika tab SesiAktif belum ada, buat otomatis
+            sheet = gc.open_by_key(spreadsheet_id).add_worksheet(title="SesiAktif", rows=100, cols=3)
+            sheet.append_row(["Email", "TokenSesi", "WaktuLogin"])
+
+        records = sheet.get_all_records()
+        waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        row_index = None
+        for idx, row in enumerate(records, start=2): # Mulai baris 2 (setelah header)
+            if str(row.get("Email", "")).strip().lower() == email.strip().lower():
+                row_index = idx
+                break
+        
+        if row_index:
+            sheet.update_cell(row_index, 2, token)
+            sheet.update_cell(row_index, 3, waktu_sekarang)
+        else:
+            sheet.append_row([email, token, waktu_sekarang])
+        return True
+    except Exception as e:
+        print(f"Error sesi: {e}")
+        return False
+
+def validasi_sesi_aktif(email, current_token):
+    """Memeriksa apakah token di session state masih sama dengan yang ada di database"""
+    if not email or not current_token:
+        return False
+    try:
+        credentials_dict = dict(st.secrets["gcp_service_account"])
+        scopes = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
+        
+        gc = gspread.authorize(creds)
+        spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
+        sheet = gc.open_by_key(spreadsheet_id).worksheet("SesiAktif")
+        
+        records = sheet.get_all_records()
+        for row in records:
+            if str(row.get("Email", "")).strip().lower() == email.strip().lower():
+                db_token = str(row.get("TokenSesi", "")).strip()
+                return db_token == current_token
+        return False
+    except Exception:
+        return True
+
 # ==========================================
-# 2B. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
+# 3. CEK KEAKTIFAN SESI PADA SETIAP RERUN
+# ==========================================
+if st.session_state["is_logged_in"]:
+    if not validasi_sesi_aktif(st.session_state["user_email"], st.session_state["session_token"]):
+        st.session_state["is_logged_in"] = False
+        st.session_state["user_email"] = ""
+        st.session_state["session_token"] = ""
+        st.error("⚠️ **Sesi Berakhir!** Akun Anda telah digunakan untuk login di perangkat atau tab browser lain.")
+        st.stop()
+
+# ==========================================
+# 4. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
 # ==========================================
 def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
     try:
@@ -66,7 +138,7 @@ def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
         return False
 
 # ==========================================
-# 3. POP-UP DIALOG UNTUK FORM LOGIN (MODAL)
+# 5. POP-UP DIALOG UNTUK FORM LOGIN (MODAL)
 # ==========================================
 @st.dialog("🔑 Masuk Member Masterbimbel")
 def form_login():
@@ -79,15 +151,22 @@ def form_login():
         else:
             with st.spinner("Memeriksa data pendaftaran Anda..."):
                 if cek_email_terdaftar(email_input):
+                    new_token = str(uuid.uuid4())
+                    clean_email = email_input.strip().lower()
+                    
+                    simpan_atau_update_sesi(clean_email, new_token)
+                    
                     st.session_state["is_logged_in"] = True
-                    st.session_state["user_email"] = email_input.strip().lower()
+                    st.session_state["user_email"] = clean_email
+                    st.session_state["session_token"] = new_token
+                    
                     st.success("✅ Email terverifikasi!")
                     st.rerun()
                 else:
                     st.error("❌ Email tidak ditemukan. Pastikan Anda sudah mengisi form pendaftaran.")
 
 # ==========================================
-# 4. HEADER UTAMA & BANNER STATUS LOGIN
+# 6. HEADER UTAMA & BANNER STATUS LOGIN
 # ==========================================
 st.title("📚 Pusat Pembelajaran Masterbimbel")
 st.write("Silakan pilih menu materi kuliah atau langsung uji kemampuanmu di menu Tryout.")
@@ -107,12 +186,13 @@ else:
         if st.button("Keluar (Logout)", type="secondary", use_container_width=True):
             st.session_state["is_logged_in"] = False
             st.session_state["user_email"] = ""
+            st.session_state["session_token"] = ""
             st.rerun()
 
 st.divider()
 
 # ==========================================
-# 5. INISIALISASI TAB UTAMA
+# 7. INISIALISASI TAB UTAMA
 # ==========================================
 tab_slide, tab_tryout = st.tabs(["📁 Kumpulan Slide Materi", "📝 Sistem Tryout CBT"])
 
@@ -223,7 +303,6 @@ with tab_tryout:
                             if(timeleft <= 0){{
                                 clearInterval(downloadTimer);
                                 document.getElementById("countdown").innerHTML = "00:00";
-                                // Otomatis refresh halaman Streamlit saat waktu habis
                                 window.parent.postMessage({{type: 'streamlit:rerun'}}, '*');
                             }} else {{
                                 var minutes = Math.floor(timeleft / 60);
@@ -248,11 +327,11 @@ with tab_tryout:
                 # ==========================================
                 # PENGECEKAN & MENAMPILKAN GAMBAR SOAL
                 # ==========================================
-                if 'gambar' in df.columns and pd.notna(df.loc[idx, 'gambar']) and str(df.loc[idx, 'gambar']).strip() != "":
-                    nama_file_gambar = str(df.loc[idx, 'gambar']).strip()
+                kolom_gambar = 'gambar' if 'gambar' in df.columns else ('Gambar' if 'Gambar' in df.columns else None)
+                if kolom_gambar and pd.notna(df.loc[idx, kolom_gambar]) and str(df.loc[idx, kolom_gambar]).strip() != "":
+                    nama_file_gambar = str(df.loc[idx, kolom_gambar]).strip()
                     
                     if not nama_file_gambar.startswith("http"):
-                        # Otomatis menarik gambar dari folder 'Images' di GitHub
                         url_gambar = f"https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/Images/{nama_file_gambar}"
                     else:
                         url_gambar = nama_file_gambar
@@ -367,8 +446,9 @@ with tab_tryout:
                         st.markdown(f"**{df.loc[i, 'Soal']}**")
                         
                         # Tampilkan gambar juga pada mode review jika ada
-                        if 'gambar' in df.columns and pd.notna(df.loc[i, 'gambar']) and str(df.loc[i, 'gambar']).strip() != "":
-                            nama_file_gambar = str(df.loc[i, 'gambar']).strip()
+                        kolom_gambar_rev = 'gambar' if 'gambar' in df.columns else ('Gambar' if 'Gambar' in df.columns else None)
+                        if kolom_gambar_rev and pd.notna(df.loc[i, kolom_gambar_rev]) and str(df.loc[i, kolom_gambar_rev]).strip() != "":
+                            nama_file_gambar = str(df.loc[i, kolom_gambar_rev]).strip()
                             if not nama_file_gambar.startswith("http"):
                                 url_gambar = f"https://raw.githubusercontent.com/growtrackid-wq/MasterBimbel/main/Images/{nama_file_gambar}"
                             else:
@@ -378,7 +458,6 @@ with tab_tryout:
                         st.write(f"- **Jawaban Kamu:** `{jawaban_user}`")
                         st.write(f"- **Jawaban Benar:** `{jawaban_benar}`")
 
-                        # Mendukung penulisan header kolom 'pembahasan' atau 'Pembahasan'
                         kolom_pembahasan = 'pembahasan' if 'pembahasan' in df.columns else ('Pembahasan' if 'Pembahasan' in df.columns else None)
                         if kolom_pembahasan and pd.notna(df.loc[i, kolom_pembahasan]):
                             st.info(f"**Pembahasan:**\n\n{df.loc[i, kolom_pembahasan]}")
