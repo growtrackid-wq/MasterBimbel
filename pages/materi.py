@@ -33,7 +33,6 @@ def cek_email_terdaftar(email_input):
         spreadsheet_id = st.secrets["gsheets"]["spreadsheet_id"]
         sheet = gc.open_by_key(spreadsheet_id).sheet1
         
-        # Ambil seluruh email dari Kolom C (Kolom ke-3)
         list_email = sheet.col_values(3)
         list_email_clean = [e.strip().lower() for e in list_email if e]
         
@@ -43,7 +42,6 @@ def cek_email_terdaftar(email_input):
         return False
 
 def simpan_atau_update_sesi(email, token):
-    """Menyimpan atau memperbarui token sesi aktif di Google Sheet secara akurat"""
     try:
         credentials_dict = dict(st.secrets["gcp_service_account"])
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -61,18 +59,15 @@ def simpan_atau_update_sesi(email, token):
         waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         clean_email = email.strip().lower()
 
-        # Cari cell berdasarkan kolom Email (Kolom 1 / A)
         try:
             cell = sheet.find(clean_email)
         except Exception:
             cell = None
 
         if cell:
-            # Jika email sudah ada, update Token (Kolom 2 / B) dan Waktu (Kolom 3 / C)
             sheet.update_cell(cell.row, 2, token)
             sheet.update_cell(cell.row, 3, waktu_sekarang)
         else:
-            # Jika belum ada, tambahkan baris baru
             sheet.append_row([clean_email, token, waktu_sekarang])
             
         return True
@@ -81,7 +76,6 @@ def simpan_atau_update_sesi(email, token):
         return False
 
 def validasi_sesi_aktif(email, current_token):
-    """Memeriksa apakah token di session state masih sama dengan yang ada di database"""
     if not email or not current_token:
         return False
     try:
@@ -100,7 +94,6 @@ def validasi_sesi_aktif(email, current_token):
             cell = None
 
         if cell:
-            # Ambil nilai token di sebelah kolom email (Kolom B / Kolom ke-2)
             db_token = str(sheet.cell(cell.row, 2).value).strip()
             return db_token == current_token.strip()
             
@@ -119,8 +112,6 @@ if st.session_state["is_logged_in"]:
         st.error("⚠️ **Sesi Berakhir!** Akun Anda telah digunakan untuk login di perangkat atau tab browser lain.")
         st.stop()
     else:
-        # Script otomatis me-refresh halaman tiap 6 detik agar perangkat lama 
-        # langsung sadar jika akunnya sudah dipakai login di perangkat lain
         auto_refresh_script = """
         <script>
             setTimeout(function(){
@@ -131,9 +122,9 @@ if st.session_state["is_logged_in"]:
         components.html(auto_refresh_script, height=0)
 
 # ==========================================
-# 4. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET
+# 4. FUNGSI SIMPAN NILAI TRYOUT KE GOOGLE SHEET (DENGAN NAMA PAKET)
 # ==========================================
-def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
+def simpan_nilai_ke_sheet(email, paket_nama, skor, benar, salah, kosong, total_soal):
     try:
         credentials_dict = dict(st.secrets["gcp_service_account"])
         scopes = ["https://www.googleapis.com/auth/spreadsheets"]
@@ -148,7 +139,7 @@ def simpan_nilai_ke_sheet(email, skor, benar, salah, kosong, total_soal):
             sheet = gc.open_by_key(spreadsheet_id).sheet1
 
         waktu_sekarang = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        baris_baru = [waktu_sekarang, email, skor, benar, salah, kosong, total_soal]
+        baris_baru = [waktu_sekarang, email, paket_nama, skor, benar, salah, kosong, total_soal]
         
         sheet.append_row(baris_baru)
         return True
@@ -173,7 +164,6 @@ def form_login():
                     new_token = str(uuid.uuid4())
                     clean_email = email_input.strip().lower()
                     
-                    # Simpan/Update token sesi ke Google Sheet
                     simpan_atau_update_sesi(clean_email, new_token)
                     
                     st.session_state["is_logged_in"] = True
@@ -247,7 +237,7 @@ with tab_slide:
                 st.button("🔒 Buka Folder (Perlu Login)", disabled=True, use_container_width=True, key="btn_coretan_locked")
 
 # ------------------------------------------
-# TAB 2: SISTEM TRYOUT CBT (LIVE TICKING TIMER)
+# TAB 2: SISTEM TRYOUT CBT (MULTI-PAKET)
 # ------------------------------------------
 with tab_tryout:
     st.subheader("Simulasi Ujian Computer Based Test (CBT)")
@@ -255,19 +245,51 @@ with tab_tryout:
     if not st.session_state["is_logged_in"]:
         st.info("🔒 Fitur Tryout CBT ini dikunci. Silakan klik **Masuk / Verifikasi** di bagian atas untuk membuka ujian.")
     else:
-        st.write("Centang kotak di bawah ini untuk memulai pengerjaan soal interaktif.")
-        mulai_ujian = st.checkbox("Mulai Simulasi Tryout Sekarang")
+        # ==========================================
+        # PILIHAN PAKET UJIAN CBT
+        # ==========================================
+        # Kamu bisa menambahkan/mengubah daftar paket dan nama file Excel di sini
+        DAFTAR_PAKET = {
+            "Paket Tryout 1 (Default)": "bank_soal.xlsx",
+            "Paket Tryout 2": "bank_soal_2.xlsx",
+            "Paket Tryout 3": "bank_soal_3.xlsx"
+        }
+
+        col_pilih_paket, col_mulai = st.columns([2, 2])
         
+        with col_pilih_paket:
+            paket_terpilih = st.selectbox(
+                "📋 **Pilih Paket Ujian CBT:**",
+                options=list(DAFTAR_PAKET.keys()),
+                disabled=st.session_state.get('ujian_berlangsung', False) # Kunci pilihan jika ujian sudah dimulai
+            )
+            file_excel_paket = DAFTAR_PAKET[paket_terpilih]
+
+        with col_mulai:
+            st.write("") # Spacing
+            st.write("") 
+            mulai_ujian = st.checkbox("Mulai Simulasi Tryout Sekarang")
+
         if mulai_ujian:
+            st.session_state['ujian_berlangsung'] = True
             st.divider()
 
-            # --- DIBUATKAN BANK SOAL ---
-            if 'data_soal' not in st.session_state:
+            # --- MEMBACA FILE EXCEL BERDASARKAN PAKET YANG DIPILIH ---
+            if 'data_soal' not in st.session_state or st.session_state.get('paket_aktif') != paket_terpilih:
                 try:
-                    df_soal = pd.read_excel("bank_soal.xlsx")
+                    df_soal = pd.read_excel(file_excel_paket)
                     st.session_state.data_soal = df_soal
+                    st.session_state.paket_aktif = paket_terpilih
+                    
+                    # Reset status ujian jika ganti paket
+                    st.session_state.soal_sekarang = 0
+                    st.session_state.jawaban_user = {}
+                    st.session_state.ujian_selesai = False
+                    if 'waktu_selesai' in st.session_state:
+                        del st.session_state['waktu_selesai']
                 except Exception as e:
-                    st.error(f"⚠️ Terjadi kesalahan saat membaca `bank_soal.xlsx`: {e}")
+                    st.error(f"⚠️ Terjadi kesalahan saat membaca file `{file_excel_paket}`: {e}")
+                    st.info("Pastikan file Excel untuk paket ini sudah di-upload ke GitHub.")
                     st.stop()
 
             # --- INISIALISASI SESSION STATE UJIAN ---
@@ -298,10 +320,10 @@ with tab_tryout:
 
             # --- TAMPILAN JIKA UJIAN MASIH BERLANGSUNG ---
             if not st.session_state.ujian_selesai:
+                st.caption(f"📌 **Sedang Mengerjakan:** {st.session_state.paket_aktif}")
                 col_timer, col_prog = st.columns([1.2, 2.8])
                 
                 with col_timer:
-                    # Kode HTML & JS untuk Timer Berjalan Real-time
                     timer_code = f"""
                     <div style="
                         font-family: Arial, sans-serif;
@@ -344,9 +366,7 @@ with tab_tryout:
                 st.markdown(f"### **Soal No. {df.loc[idx, 'No']}**")
                 st.markdown(f"**{df.loc[idx, 'Soal']}**")
 
-                # ==========================================
                 # PENGECEKAN & MENAMPILKAN GAMBAR SOAL
-                # ==========================================
                 kolom_gambar = 'gambar' if 'gambar' in df.columns else ('Gambar' if 'Gambar' in df.columns else None)
                 if kolom_gambar and pd.notna(df.loc[idx, kolom_gambar]) and str(df.loc[idx, kolom_gambar]).strip() != "":
                     nama_file_gambar = str(df.loc[idx, kolom_gambar]).strip()
@@ -358,7 +378,7 @@ with tab_tryout:
                         
                     st.image(url_gambar, width=350, caption=f"Gambar Soal No. {df.loc[idx, 'No']}")
 
-                # Menyiapkan Opsi Jawaban (Mendukung A, B, C, D, E)
+                # Menyiapkan Opsi Jawaban (A, B, C, D, E)
                 opsi = [
                     f"A. {df.loc[idx, 'A']}", 
                     f"B. {df.loc[idx, 'B']}", 
@@ -410,7 +430,7 @@ with tab_tryout:
             # --- TAMPILAN JIKA UJIAN SELESAI ---
             else:
                 st.balloons()
-                st.subheader("📊 Hasil Simulasi Tryout CBT")
+                st.subheader(f"📊 Hasil Simulasi Tryout CBT ({st.session_state.paket_aktif})")
 
                 benar = 0
                 salah = 0
@@ -437,6 +457,7 @@ with tab_tryout:
                     with st.spinner("Menyimpan hasil ujian Anda ke database..."):
                         if simpan_nilai_ke_sheet(
                             st.session_state["user_email"],
+                            st.session_state.paket_aktif,
                             skor_persen,
                             benar,
                             salah,
@@ -488,9 +509,12 @@ with tab_tryout:
                     st.session_state.soal_sekarang = 0
                     st.session_state.jawaban_user = {}
                     st.session_state.ujian_selesai = False
+                    st.session_state.ujian_berlangsung = False
                     st.session_state["nilai_tersimpan"] = False
                     
                     if 'waktu_selesai' in st.session_state:
                         del st.session_state['waktu_selesai']
                         
                     st.rerun()
+        else:
+            st.session_state['ujian_berlangsung'] = False
