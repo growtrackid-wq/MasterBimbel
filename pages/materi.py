@@ -245,10 +245,6 @@ with tab_tryout:
     if not st.session_state["is_logged_in"]:
         st.info("🔒 Fitur Tryout CBT ini dikunci. Silakan klik **Masuk / Verifikasi** di bagian atas untuk membuka ujian.")
     else:
-        # ==========================================
-        # PILIHAN PAKET UJIAN CBT
-        # ==========================================
-        # Kamu bisa menambahkan/mengubah daftar paket dan nama file Excel di sini
         DAFTAR_PAKET = {
             "Paket Tryout 1 (Default)": "bank_soal.xlsx",
             "Paket Tryout 2": "bank_soal_2.xlsx",
@@ -257,18 +253,34 @@ with tab_tryout:
 
         col_pilih_paket, col_mulai = st.columns([2, 2])
         
-        with col_pilih_paket:
-            paket_terpilih = st.selectbox(
-                "📋 **Pilih Paket Ujian CBT:**",
-                options=list(DAFTAR_PAKET.keys()),
-                disabled=st.session_state.get('ujian_berlangsung', False) # Kunci pilihan jika ujian sudah dimulai
-            )
-            file_excel_paket = DAFTAR_PAKET[paket_terpilih]
-
         with col_mulai:
             st.write("") # Spacing
             st.write("") 
             mulai_ujian = st.checkbox("Mulai Simulasi Tryout Sekarang")
+
+        with col_pilih_paket:
+            paket_terpilih = st.selectbox(
+                "📋 **Pilih Paket Ujian CBT:**",
+                options=list(DAFTAR_PAKET.keys()),
+                key="pilihan_paket_aktif",
+                disabled=mulai_ujian # Dropdown terkunci hanya jika kotak centang "Mulai Simulasi" dicentang
+            )
+            
+            # Deteksi jika user mengganti pilihan paket saat belum mulai ujian
+            if 'last_paket' not in st.session_state:
+                st.session_state.last_paket = paket_terpilih
+            
+            if st.session_state.last_paket != paket_terpilih:
+                st.session_state.last_paket = paket_terpilih
+                if 'data_soal' in st.session_state:
+                    del st.session_state['data_soal']
+                if 'jawaban_user' in st.session_state:
+                    st.session_state.jawaban_user = {}
+                if 'waktu_selesai' in st.session_state:
+                    del st.session_state['waktu_selesai']
+                st.rerun()
+
+        file_excel_paket = DAFTAR_PAKET[paket_terpilih]
 
         if mulai_ujian:
             st.session_state['ujian_berlangsung'] = True
@@ -281,7 +293,6 @@ with tab_tryout:
                     st.session_state.data_soal = df_soal
                     st.session_state.paket_aktif = paket_terpilih
                     
-                    # Reset status ujian jika ganti paket
                     st.session_state.soal_sekarang = 0
                     st.session_state.jawaban_user = {}
                     st.session_state.ujian_selesai = False
